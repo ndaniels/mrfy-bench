@@ -1,0 +1,39 @@
+#!/usr/bin/env ruby
+require 'benchmark'
+# inputs: 
+# 'short' or 'long' benchmark
+# path to directory containing SMURF data files (iff long benchmark)
+
+usage = "#{$0} <-s|-l smurf_data_path>"
+mode = nil
+case ARGV[0]
+when "-s" then mode = :short
+when "-l" then mode = :long
+else abort usage
+end
+
+# long benchmark runs many more iterations, a varying number of iterations,
+# and reports the slope and intercept
+# long benchmark also runs smurf for comparison
+if mode == :long
+  datPath = ARGV[1]
+  if not Dir.dir?(datPath)
+    abort usage
+  elsif not File.exist?(File.join(datPath, "betaDataExposed.dat"))
+    abort "data file not found in #{datPath}"
+  end
+end
+
+query_dir = "queries"
+template_dir = "templates"
+smurf = "smurf"
+mrfy = "mrfy"
+
+# benchmark on the Cartesian product of hmms and queries
+Dir.glob(File.join(template_dir, "*.hmm+")).each do |hmm|
+  Dir.glob(File.join(query_dir, "*.fasta")).each do |query|
+    Benchmark.bm(7) do |x|
+      x.report("mrfy:") {system(mrfy, hmm, query)}
+    end
+  end
+end
