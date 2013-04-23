@@ -24,16 +24,41 @@ if mode == :long
   end
 end
 
+short_query = "short.fasta"
+long_query = "long.fasta"
+
 query_dir = "queries"
-template_dir = "templates"
 smurf = "smurf"
 mrfy = "mrfy"
+hmmGlob = "*.hmm+"
 
-# benchmark on the Cartesian product of hmms and queries
-Dir.glob(File.join(template_dir, "*.hmm+")).each do |hmm|
-  Dir.glob(File.join(query_dir, "*.fasta")).each do |query|
-    Benchmark.bm(7) do |x|
-      x.report("mrfy:") {system(mrfy, hmm, query)}
-    end
-  end
+if mode == :short
+  query = short_query
+  template_dir = "long_templates"
+  num_passes = 1
+else
+  query = long_query
+  template_dir = "short_templates"
+  num_passes = 5
 end
+
+query = File.join(query_dir, query)
+
+# benchmark all templates.
+# each template is aligned with the query file.
+times = []
+
+Dir.glob(File.join(template_dir, hmmGlob)).each do |hmm|
+  h = File.basename(hmm)
+  q = File.basename(query)
+  puts "#{h}: "
+  local_times = []
+  num_passes.times do
+    local_times << Benchmark.measure {system(mrfy, "-viterbi", hmm, query)}.real
+  end
+  times << local_times.min
+end
+
+# statistics on times
+total = times.inject{|acc, t| acc += t}
+puts "Total time elapsed: #{total}"
