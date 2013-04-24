@@ -1,0 +1,6 @@
+This is a simple benchmarking framework for MRFy.
+It is not yet intended for public consumption.
+Run `mrfy-bench -s` for a short benchmark, or
+`mrfy-bench -l smurf-data-dir` for a long benchmark that also compares to
+SMURF.
+mrfy and smurf must be in your path.
