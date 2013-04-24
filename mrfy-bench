@@ -17,7 +17,7 @@ end
 # long benchmark also runs smurf for comparison
 if mode == :long
   datPath = ARGV[1]
-  if not Dir.dir?(datPath)
+  if not (datPath && File.directory?(datPath))
     abort usage
   elsif not File.exist?(File.join(datPath, "betaDataExposed.dat"))
     abort "data file not found in #{datPath}"
@@ -34,11 +34,11 @@ hmmGlob = "*.hmm+"
 
 if mode == :short
   query = short_query
-  template_dir = "long_templates"
+  template_dir = "short_templates"
   num_passes = 1
 else
   query = long_query
-  template_dir = "short_templates"
+  template_dir = "long_templates"
   num_passes = 5
 end
 
@@ -51,10 +51,11 @@ times = []
 Dir.glob(File.join(template_dir, hmmGlob)).each do |hmm|
   h = File.basename(hmm)
   q = File.basename(query)
-  puts "#{h}: "
+  puts "#{h}"
   local_times = []
+  cmd = [mrfy, "-viterbi", hmm, query, ">/dev/null"].join(" ")
   num_passes.times do
-    local_times << Benchmark.measure {system(mrfy, "-viterbi", hmm, query)}.real
+    local_times << Benchmark.measure {system(cmd)}.real
   end
   times << local_times.min
 end
