@@ -1,6 +1,13 @@
 This is a simple benchmarking framework for MRFy.
 It is not yet intended for public consumption.
-Run `mrfy-bench -s` for a short benchmark, or
-`mrfy-bench -l smurf-data-dir` for a long benchmark that also compares to
-SMURF.
-mrfy and smurf must be in your path.
+There are four basic variants: `mrfy-bench <-s | -m | -l | -p>`
+Short is intended as a microbenchmark; it takes 5-10 seconds on reasonable 
+hardware.
+Medium takes less than 2 minutes, and takes the better of two passes for each.
+Long and Paper take a significant amount of time, running more templates and
+choosing the best of 5 runs for each.
+The only difference between Long and Paper is that the latter requires SMURF
+to be run as well; Long only runs SMURF if either the SMURF_DAT_PATH environment
+variable is set, or the path is passed as an argument after `-p`.
+Medium runs SMURF under the same criteria as Long.
+Note: mrfy and smurf (if it is being run) must be in your path.
