@@ -4,28 +4,33 @@ require 'benchmark'
 # 'short' or 'long' benchmark
 # path to directory containing SMURF data files (iff long benchmark)
 
-usage = "#{$0} <-s|-l smurf_data_path>"
+usage = "#{$0} <-s|-m [smurf_dat_path]|-l [smurf_dat_path]|-p [smurf_dat_path]>"
 mode = nil
 case ARGV[0]
 when "-s" then mode = :short
+when "-m" then mode = :med
 when "-l" then mode = :long
+when "-p" then mode = :paper
 else abort usage
 end
-
+run_smurf = false
 # long benchmark runs many more iterations, a varying number of iterations,
 # and reports the slope and intercept
 # long benchmark also runs smurf for comparison
-if mode == :long
-  datPath = ARGV[1]
-  if not (datPath && File.directory?(datPath))
+if mode == :long || mode == :med || mode == :paper
+  datPath = ENV["SMURF_DAT_PATH"] || ARGV[1]
+  run_smurf = true if datPath
+  # datPath only required for paper mode.
+  if (not (datPath && File.directory?(datPath))) && mode == :paper
     abort usage
-  elsif not File.exist?(File.join(datPath, "betaDataExposed.dat"))
+  elsif datPath && (not File.exist?(File.join(datPath, "betaDataExposed.dat")))
     abort "data file not found in #{datPath}"
   end
 end
 
 short_query = "short.fasta"
 long_query = "long.fasta"
+med_query = "short.fasta"
 
 query_dir = "queries"
 smurf = "smurf"
@@ -36,6 +41,10 @@ if mode == :short
   query = short_query
   template_dir = "short_templates"
   num_passes = 1
+elsif mode == :med
+  query = med_query
+  template_dir = "med_templates"
+  num_passes = 2
 else
   query = long_query
   template_dir = "long_templates"
@@ -47,19 +56,39 @@ query = File.join(query_dir, query)
 # benchmark all templates.
 # each template is aligned with the query file.
 times = []
-
+smurf_times = []
+# change this so we measure each template separately,
+# and report the individual times as well as the whole.
 Dir.glob(File.join(template_dir, hmmGlob)).each do |hmm|
   h = File.basename(hmm)
   q = File.basename(query)
-  puts "#{h}"
-  local_times = []
+  # puts "#{h}"
+  hmm_times = []
+  hmm_smurf_times = []
   cmd = [mrfy, "-viterbi", hmm, query, ">/dev/null"].join(" ")
+  smurf_cmd = [smurf, hmm, query, "/dev/null"].join(" ") # smurf requires
+                                                         # outfile name
   num_passes.times do
-    local_times << Benchmark.measure {system(cmd)}.real
+    hmm_times << Benchmark.measure {system(cmd)}.real
+    hmm_smurf_times << Benchmark.measure {system(smurf_cmd)}.real if run_smurf
   end
-  times << local_times.min
+  times << [h, hmm_times.min]
+  smurf_times << [h, hmm_smurf_times.min] if run_smurf
 end
 
 # statistics on times
-total = times.inject{|acc, t| acc += t}
-puts "Total time elapsed: #{total}"
+total = times.inject(0.0){|acc, t| acc += t[1]}
+times.each do |t|
+  model, time = t
+  puts "MRFy, #{model}, #{time}"
+end
+puts "MRFy Total, , #{total}"
+
+if run_smurf
+  smurf_times.each do |t|
+    model, time = t
+    puts "SMURF, #{model}, #{time}"
+  end
+  smurf_total = smurf_times.inject(0.0){|acc, t| acc += t[1]}
+  puts "SMURF Total, , #{smurf_total}"
+end

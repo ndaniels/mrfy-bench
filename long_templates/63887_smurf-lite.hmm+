@@ -12,7 +12,6 @@ CKSUM 4231054119
 STATS LOCAL     VLAMBDA 0.697628
 STATS LOCAL         VMU -11.822405
 STATS LOCAL        FTAU -6.167189
-BETA  297 359 3 79 -1 oio
 HMM          A        C        D        E        F        G        H        I        K        L        M        N        P        Q        R        S        T        V        W        Y   
             m->m     m->i     m->d     i->m     i->i     d->m     d->d
   COMPO   2.58495  4.32840  2.52956  2.60124  3.34062  2.83349  3.79228  2.94957  2.57451  2.64157  3.81632  3.04636  2.79510  3.25565  3.07536  2.74118  2.94540  2.80529  4.00835  3.51118
