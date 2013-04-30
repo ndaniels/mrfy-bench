@@ -17,15 +17,15 @@ run_smurf = false
 # long benchmark runs many more iterations, a varying number of iterations,
 # and reports the slope and intercept
 # long benchmark also runs smurf for comparison
-if mode == :long || mode == :med || mode == :paper
-  datPath = ENV["SMURF_DAT_PATH"] || ARGV[1]
-  run_smurf = true if datPath
-  # datPath only required for paper mode.
-  if (not (datPath && File.directory?(datPath))) && mode == :paper
-    abort usage
-  elsif datPath && (not File.exist?(File.join(datPath, "betaDataExposed.dat")))
-    abort "data file not found in #{datPath}"
-  end
+
+datPath = ENV["SMURF_DAT_PATH"] || ARGV[1]
+run_smurf = true if datPath
+# datPath only required for paper mode.
+if (not (datPath && File.directory?(datPath))) && mode == :paper
+  abort usage
+elsif datPath && 
+    (not File.exist?(File.join(datPath, "betaDataExposedRevised.dat")))
+  abort "data file not found in #{datPath}"
 end
 
 short_query = "short.fasta"
@@ -62,20 +62,27 @@ smurf_times = []
 Dir.glob(File.join(template_dir, hmmGlob)).each do |hmm|
   h = File.basename(hmm)
   q = File.basename(query)
+  abs_hmm = File.expand_path(hmm)
+  abs_query = File.expand_path(query)
   # puts "#{h}"
   hmm_times = []
   hmm_smurf_times = []
   cmd = [mrfy, "-viterbi", hmm, query, ">/dev/null"].join(" ")
-  smurf_cmd = [smurf, hmm, query, "/dev/null"].join(" ") # smurf requires
-                                                         # outfile name
+  # smurf requires outfile name
+  smurf_cmd = [smurf, abs_hmm, abs_query, "/dev/null"].join(" ")
+  puts smurf_cmd
   num_passes.times do
     hmm_times << Benchmark.measure {system(cmd)}.real
-    hmm_smurf_times << Benchmark.measure {system(smurf_cmd)}.real if run_smurf
+    # must temporarily chdir to location of SMURF data path
+    if run_smurf
+      Dir.chdir(datPath) do
+        hmm_smurf_times << Benchmark.measure {system(smurf_cmd)}.real
+      end
+    end
   end
   times << [h, hmm_times.min]
   smurf_times << [h, hmm_smurf_times.min] if run_smurf
 end
-
 # statistics on times
 total = times.inject(0.0){|acc, t| acc += t[1]}
 times.each do |t|
