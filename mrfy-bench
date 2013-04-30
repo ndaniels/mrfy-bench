@@ -70,7 +70,6 @@ Dir.glob(File.join(template_dir, hmmGlob)).each do |hmm|
   cmd = [mrfy, "-viterbi", hmm, query, ">/dev/null"].join(" ")
   # smurf requires outfile name
   smurf_cmd = [smurf, abs_hmm, abs_query, "/dev/null"].join(" ")
-  puts smurf_cmd
   num_passes.times do
     hmm_times << Benchmark.measure {system(cmd)}.real
     # must temporarily chdir to location of SMURF data path
