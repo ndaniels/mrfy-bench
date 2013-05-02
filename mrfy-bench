@@ -6,13 +6,30 @@ require 'benchmark'
 
 usage = "#{$0} <-s|-m [smurf_dat_path]|-l [smurf_dat_path]|-p [smurf_dat_path]>"
 mode = nil
-case ARGV[0]
-when "-s" then mode = :short
-when "-m" then mode = :med
-when "-l" then mode = :long
-when "-p" then mode = :paper
-else abort usage
-end
+old = false
+loop {
+  case ARGV[0]
+  when "-s"
+    mode = :short
+    ARGV.shift
+  when "-m"
+    mode = :med
+    ARGV.shift
+  when "-l"
+    mode = :long
+    ARGV.shift
+  when "-p"
+    mode = :paper
+    ARGV.shift
+  when "-old"
+    old = true
+    ARGV.shift
+  when /^-/ then
+    abort usage
+  else
+    break
+  end
+}
 run_smurf = false
 # long benchmark runs many more iterations, a varying number of iterations,
 # and reports the slope and intercept
@@ -53,6 +70,11 @@ end
 
 query = File.join(query_dir, query)
 
+viterbi_flag = "-viterbi"
+if old
+  viterbi_flag = "-old-viterbi"
+end
+
 # benchmark all templates.
 # each template is aligned with the query file.
 times = []
@@ -67,7 +89,7 @@ Dir.glob(File.join(template_dir, hmmGlob)).each do |hmm|
   # puts "#{h}"
   hmm_times = []
   hmm_smurf_times = []
-  cmd = [mrfy, "-viterbi", hmm, query, ">/dev/null"].join(" ")
+  cmd = [mrfy, viterbi_flag, hmm, query, ">/dev/null"].join(" ")
   # smurf requires outfile name
   smurf_cmd = [smurf, abs_hmm, abs_query, "/dev/null"].join(" ")
   num_passes.times do
