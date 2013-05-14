@@ -1,0 +1,269 @@
+#!/bin/sh
+
+set -e
+
+function err {
+  echo $* >&2
+}
+
+function msgf {
+  if [ -n "$verbose" ]; then
+    printf $*
+  fi
+}
+
+function usage {
+  err
+  err "Usage: $(basename $0) [ -smurf ] ( -s | -m | -l )"
+  cat 2>&1 <<EOF
+
+  viterbi-bench benchmarks a set of variations of the Viterbi
+  algorithm implemented in MRFy. viterbi-bench requires that
+  the MRFY_CHECKOUTS_PATH is set to a directory containing
+  git checkouts of MRFy branches. By default, viterbi-bench
+  recursively searches the directory for checkouts and runs
+  the benchmark specified against all of them.
+  
+  The -b option can be used to specify only some branches to
+  benchmark.
+
+  viterbi-bench must be run inside the mrfy-bench directory.
+
+  protip: viterbi-bench [ args ] | column -t
+           
+  -smurf   When set, "smurf" is run on the benchmark instead
+           of mrfy.
+           The SMURF_DAT_PATH environment variable must be
+           set to the directory containing the "smurf"
+           executable and the beta "dat" files.
+
+  -s       Benchmark that takes 5-10 seconds.
+
+  -m       Benchmark that takes 2 minutes and reports the
+           better of two passes for each template.
+
+  -l       Benchmark that takes a significant amount of time.
+           Reports the best of five passes for each template.
+
+  -b "dir-name [ dir-name [ ... ] ]"
+           A single string with a space delimited list of
+           directory names to run benchmarks on.
+
+  -v       Show extra output, like the times for each HMM.
+
+  -h       Show this usage information.
+EOF
+  exit 1
+}
+
+mode=
+smurf=
+user_checkouts=
+verbose=
+while true; do
+  case $1 in
+    -smurf) smurf="yes" ; shift ;;
+    -s)     mode="short" ; shift ;;
+    -m)     mode="med" ; shift ;;
+    -l)     mode="long" ; shift ;;
+    -b)     user_checkouts="$2" ; shift 2 ;;
+    -v)     verbose="yes" ; shift ;;
+    -h)     usage ;;
+    -*)
+      err "Unrecognized option $1"
+      usage
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
+data_buried="$SMURF_PATH/betaDataBuriedRevised.dat"
+data_exposed="$SMURF_PATH/betaDataExposedRevised.dat"
+smurf_exec="$SMURF_PATH/smurf"
+
+
+if [ -z "$MRFY_CHECKOUTS_PATH" ]; then
+  err "The MRFY_CHECKOUTS_PATH is not set."
+  usage
+fi
+if [ -z "$mode" ]; then
+  err "No benchmark specified."
+  usage
+fi
+if [ -n "$smurf" ]; then
+  if [ -z "$SMURF_PATH" ]; then
+    err "SMURF_PATH environment variable not set."
+    exit 1
+  fi
+  if ! [ -x "$smurf_exec" ]; then
+    err "Cannot find smurf executable at $smurf_exec"
+    exit 1
+  fi
+  if ! [ -r "$data_buried" ] || ! [ -r "$data_exposed" ]; then
+    err "Cannot find data files in $smurf_path"
+    exit 1
+  fi
+fi
+
+################################################################################
+# Benchmarking
+################################################################################
+
+query_file=
+template_dir=
+passes=
+case $mode in
+  short)
+    query_file="$PWD/queries/short.fasta"
+    template_dir="$PWD/short_templates"
+    passes=1
+    ;;
+  med)
+    query_file="$PWD/queries/short.fasta"
+    template_dir="$PWD/med_templates"
+    passes=2
+    ;;
+  long)
+    query_file="$PWD/queries/long.fasta"
+    template_dir="$PWD/long_templates"
+    passes=5
+    ;;
+  *)
+    err "BUG: Unrecognized mode $mode"
+    exit 1
+    ;;
+esac
+
+# run_benchmark runs mrfy or smurf N (= $passes) times on a set of HMMs.
+# When running mrfy, `run_benchmark` has one argument: the path to a checkout.
+# When running smurf, `run_benchmark` takes no arguments.
+function run_benchmark {
+  checkout="$1"
+  hmm_times=()
+  benchname=
+
+  if [ -z "$checkout" ]; then
+    benchname="smurf"
+  else
+    benchname=$(basename "$checkout")
+  fi
+
+  for hmm in $template_dir/*.hmm+; do
+    pass_times=()
+    for ((i = 1; i <= $passes; i++)); do
+      t=
+      if [ -z "$checkout" ]; then  # i miss first class functions
+        t=$(run_smurf "$hmm" "$query_file")
+      else
+        t=$(run_mrfy "$checkout" "$hmm" "$query_file")
+      fi
+      pass_times=("${pass_times[@]}" "$t")
+    done
+
+    besttime=$(array_min "${pass_times[*]}")
+    msgf "%s\t%s\t%f\n" "$benchname" "$(basename "$hmm")" "$besttime"
+    hmm_times=("${hmm_times[@]}" "$besttime")
+  done
+
+  benchtime=$(array_sum "${hmm_times[*]}")
+
+  printf "%s\ttotal\t%f\n" "$benchname" "$benchtime"
+}
+
+function run_mrfy {
+  checkout="$1"
+  hmm="$2"
+  query_file="$3"
+
+  timeit "$checkout"/mrfy -viterbi "$hmm" "$query_file"
+}
+
+function run_smurf {
+  hmm="$1"
+  query_file="$2"
+
+  (
+    cd "$SMURF_PATH"
+    timeit "$smurf_exec" "$hmm" "$query_file" /dev/null
+  )
+}
+
+function timeit {
+  /usr/bin/env time -f '%e' /bin/sh -c "$* > /dev/null 2>&1" 2>&1
+}
+
+function array_sum {
+  arr=($1)
+  sum=0.0
+  for v in ${arr[@]}; do
+    sum=$(echo "$sum + $v" | bc)
+  done
+  echo $sum
+}
+
+function array_min {
+  arr=($1)
+  if [[ ${#arr[@]} = 0 ]]; then
+    err "Cannot take min of empty array."
+    exit 1
+  fi
+  min=${arr[0]}
+  for ((i = 1; i < ${#arr[@]}; i++)); do
+    if [[ ${arr[$i]} < $min ]]; then
+      min=${arr[$i]}
+    fi
+  done
+  echo $min
+}
+
+# Returns true if the given checkout is in the user provided list of checkouts.
+function checkout_matched {
+  checkout="$1"
+  if [ -z "$user_checkouts" ]; then
+    return 0
+  fi
+  for user_checkout in $user_checkouts; do
+    if [ "$(basename "$checkout")" = "$user_checkout" ]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
+# Returns true if the given directory is the root directory of a checkout.
+# (Determined by sniffing for a `mrfy.cabal` file.)
+function is_checkout {
+  checkout="$1"
+  [ -f "$checkout/mrfy.cabal" ]
+}
+
+function build_checkout {
+  (
+    cd "$1"
+    cabal configure >&2
+    cabal build >&2
+    cp dist/build/mrfy/mrfy ./
+  )
+}
+
+if [ -n "$smurf" ]; then
+  run_benchmark
+fi
+
+dirs=$(find -L $MRFY_CHECKOUTS_PATH -type d \
+            -and -not -wholename '*.git*' \
+            -and -not -wholename '*/dist*')
+for dir in $dirs; do
+  if ! is_checkout "$dir"; then
+    continue
+  fi
+  if ! checkout_matched "$dir"; then
+    continue
+  fi
+  err "### Building $dir ###"
+  build_checkout "$dir"
+  run_benchmark "$dir"
+done
+
