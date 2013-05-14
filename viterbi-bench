@@ -8,7 +8,7 @@ function err {
 
 function msgf {
   if [ -n "$verbose" ]; then
-    printf $*
+    printf "$@"
   fi
 }
 
@@ -29,7 +29,7 @@ function usage {
 
   viterbi-bench must be run inside the mrfy-bench directory.
 
-  protip: viterbi-bench [ args ] | column -t
+  protip: viterbi-bench -col [ args ]
            
   -smurf   When set, "smurf" is run on the benchmark instead
            of mrfy.
@@ -51,6 +51,8 @@ function usage {
 
   -v       Show extra output, like the times for each HMM.
 
+  -col     Pipes output through "column".
+
   -h       Show this usage information.
 EOF
   exit 1
@@ -60,6 +62,7 @@ mode=
 smurf=
 user_checkouts=
 verbose=
+column=
 while true; do
   case $1 in
     -smurf) smurf="yes" ; shift ;;
@@ -68,6 +71,7 @@ while true; do
     -l)     mode="long" ; shift ;;
     -b)     user_checkouts="$2" ; shift 2 ;;
     -v)     verbose="yes" ; shift ;;
+    -col)   column="yes" ; shift ;;
     -h)     usage ;;
     -*)
       err "Unrecognized option $1"
@@ -110,6 +114,12 @@ fi
 ################################################################################
 # Benchmarking
 ################################################################################
+
+cpuid=$(grep 'model name' /proc/cpuinfo \
+        | head -n 1 \
+        | cut -d':' -f2 \
+        | sed -e 's/^ *//g' -e 's/ *$//g')
+arch=$(uname -m)
 
 query_file=
 template_dir=
@@ -163,13 +173,14 @@ function run_benchmark {
     done
 
     besttime=$(array_min "${pass_times[*]}")
-    msgf "%s\t%s\t%f\n" "$benchname" "$(basename "$hmm")" "$besttime"
+    msgf "%s\t%s\t%f\t%s\t%s\n" \
+      "$benchname" "$(basename "$hmm")" "$besttime" "$arch" "$cpuid"
     hmm_times=("${hmm_times[@]}" "$besttime")
   done
 
   benchtime=$(array_sum "${hmm_times[*]}")
 
-  printf "%s\ttotal\t%f\n" "$benchname" "$benchtime"
+  printf "%s\ttotal\t%f\t%s\t%s\n" "$benchname" "$benchtime" "$arch" "$cpuid"
 }
 
 function run_mrfy {
@@ -192,6 +203,7 @@ function run_smurf {
 
 function timeit {
   /usr/bin/env time -f '%e' /bin/sh -c "$* > /dev/null 2>&1" 2>&1
+  # /usr/bin/env time -f '%e' /bin/sh -c "$*" 
 }
 
 function array_sum {
@@ -248,22 +260,32 @@ function build_checkout {
   )
 }
 
-if [ -n "$smurf" ]; then
-  run_benchmark
-fi
+function outfmt {
+  if [ -z "$column" ]; then
+    cat
+  else
+    column -t -s'	' # <- hidden '\t' character
+  fi
+}
 
-dirs=$(find -L $MRFY_CHECKOUTS_PATH -type d \
-            -and -not -wholename '*.git*' \
-            -and -not -wholename '*/dist*')
-for dir in $dirs; do
-  if ! is_checkout "$dir"; then
-    continue
+(
+  if [ -n "$smurf" ]; then
+    run_benchmark
   fi
-  if ! checkout_matched "$dir"; then
-    continue
-  fi
-  err "### Building $dir ###"
-  build_checkout "$dir"
-  run_benchmark "$dir"
-done
+
+  dirs=$(find -L $MRFY_CHECKOUTS_PATH -type d \
+              -and -not -wholename '*.git*' \
+              -and -not -wholename '*/dist*')
+  for dir in $dirs; do
+    if ! is_checkout "$dir"; then
+      continue
+    fi
+    if ! checkout_matched "$dir"; then
+      continue
+    fi
+    err "### Building $dir ###"
+    build_checkout "$dir"
+    run_benchmark "$dir"
+  done
+) | outfmt
 

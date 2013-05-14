@@ -10,7 +10,9 @@ the benchmark specified against all of them.
 The -b option can be used to specify only some branches to
 benchmark.
 
-protip: viterbi-bench [ args ] | column -t
+viterbi-bench must be run inside the mrfy-bench directory.
+
+protip: viterbi-bench -col [ args ]
          
 -smurf   When set, "smurf" is run on the benchmark instead
          of mrfy.
@@ -31,6 +33,8 @@ protip: viterbi-bench [ args ] | column -t
          directory names to run benchmarks on.
 
 -v       Show extra output, like the times for each HMM.
+
+-col     Pipes output through "column".
 
 -h       Show this usage information.
 
