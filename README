@@ -1,3 +1,42 @@
+README for `viterbi-bench`
+==========================
+viterbi-bench benchmarks a set of variations of the Viterbi
+algorithm implemented in MRFy. viterbi-bench requires that
+the MRFY_CHECKOUTS_PATH is set to a directory containing
+git checkouts of MRFy branches. By default, viterbi-bench
+recursively searches the directory for checkouts and runs
+the benchmark specified against all of them.
+
+The -b option can be used to specify only some branches to
+benchmark.
+
+protip: viterbi-bench [ args ] | column -t
+         
+-smurf   When set, "smurf" is run on the benchmark instead
+         of mrfy.
+         The SMURF_DAT_PATH environment variable must be
+         set to the directory containing the "smurf"
+         executable and the beta "dat" files.
+
+-s       Benchmark that takes 5-10 seconds.
+
+-m       Benchmark that takes 2 minutes and reports the
+         better of two passes for each template.
+
+-l       Benchmark that takes a significant amount of time.
+         Reports the best of five passes for each template.
+
+-b "dir-name [ dir-name [ ... ] ]"
+         A single string with a space delimited list of
+         directory names to run benchmarks on.
+
+-v       Show extra output, like the times for each HMM.
+
+-h       Show this usage information.
+
+
+README for `mrfy-bench`
+=======================
 This is a simple benchmarking framework for MRFy.
 It is not yet intended for public consumption.
 There are four basic variants: `mrfy-bench <-s | -m | -l | -p>`
@@ -11,3 +50,5 @@ to be run as well; Long only runs SMURF if either the SMURF_DAT_PATH environment
 variable is set, or the path is passed as an argument after `-p`.
 Medium runs SMURF under the same criteria as Long.
 Note: mrfy and smurf (if it is being run) must be in your path.
+
+
