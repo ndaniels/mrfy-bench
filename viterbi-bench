@@ -296,7 +296,7 @@ function outfmt {
   fi
 }
 
-(
+{
   if [ -n "$smurf" ]; then
     run_benchmark
   fi
@@ -304,16 +304,23 @@ function outfmt {
   dirs=$(find -L $MRFY_CHECKOUTS_PATH -type d \
               -and -not -wholename '*.git*' \
               -and -not -wholename '*/dist*')
+  checkouts=()
+  basenames=()
   for dir in $dirs; do
-    if ! is_checkout "$dir"; then
-      continue
+    if ! [[ -h "$dir" ]] && is_checkout "$dir" && checkout_matched "$dir"; then
+      checkouts+=("$dir")
+      basenames+=("$(basename "$dir")")
     fi
-    if ! checkout_matched "$dir"; then
-      continue
-    fi
+  done
+  for dir in "${checkouts[@]}"; do
     err "### Building $dir ###"
     build_checkout "$dir"
+  done
+  err "### Running ${basenames[*]}"
+  for dir in "${checkouts[@]}"; do
     run_benchmark "$dir"
   done
-) | outfmt
+
+
+} | outfmt
 
