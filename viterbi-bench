@@ -2,6 +2,8 @@
 
 set -e
 
+declare -A skip
+
 function err {
   echo "$*" >&2
 }
@@ -14,7 +16,7 @@ function msgf {
 
 function usage {
   err
-  err "Usage: $(basename $0) [ -smurf ] ( -s | -m | -l | -valgrind )"
+  err "Usage: $(basename $0) [-skip basename ...] [ -smurf ] ( -s | -m | -l | -valgrind )"
   cat 2>&1 <<EOF
 
   viterbi-bench benchmarks a set of variations of the Viterbi
@@ -83,6 +85,7 @@ while true; do
     -v)        verbose="yes" ; shift ;;
     -col)      column="yes" ; shift ;;
     -h)        usage ;;
+    -skip)     skip["$2"]=yes ; shift ; shift ;;
     --)
       shift
       valgrind_opts="$@"
@@ -307,7 +310,9 @@ function outfmt {
   checkouts=()
   basenames=()
   for dir in $dirs; do
-    if ! [[ -h "$dir" ]] && is_checkout "$dir" && checkout_matched "$dir"; then
+    if ! [[ -h "$dir" ]] && is_checkout "$dir" && checkout_matched "$dir" &&
+       [[ -z "${skip[$(basename "$dir")]}" ]]
+    then
       checkouts+=("$dir")
       basenames+=("$(basename "$dir")")
     fi
