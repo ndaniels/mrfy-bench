@@ -178,11 +178,19 @@ function run_benchmark {
   checkout="$1"
   hmm_times=()
   benchname=
+  git=
+  dirty=
+
 
   if [ -z "$checkout" ]; then
     benchname="smurf"
   else
     benchname=$(basename "$checkout")
+    git=$(cd "$checkout"; git log --format="%h" 'HEAD^..HEAD')
+    { cd "$checkout" ; if git status --porcelain | grep '^ M ' > /dev/null; then
+                         dirty="*"
+                       fi
+    }
   fi
 
   for hmm in $template_dir/*.hmm+; do
@@ -206,8 +214,11 @@ function run_benchmark {
 
   benchtime=$(array_sum "${hmm_times[*]}")
 
-  printf "%-13s  %6.2fs  %6s  %-8s  %-6s  %s\n" "$benchname" "$benchtime" \
-    "$(hostname)" "$arch" "$ghcver" "$cpuid"
+  shortbench=$(lua5.1 -e "s=[[$benchname]];
+                          io.stdout:write(#s <= 13 and s or '...' .. s:sub(-10,-1))")
+
+  printf "%-21s  %6.2fs  %6s  %-6s  %s\n" "$shortbench $git$dirty" "$benchtime" \
+     "$arch" "$ghcver" "$cpuid"
 }
 
 function run_mrfy {
