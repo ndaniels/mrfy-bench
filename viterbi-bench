@@ -132,7 +132,9 @@ fi
 cpuid=$(grep 'model name' /proc/cpuinfo \
         | head -n 1 \
         | cut -d':' -f2 \
-        | sed -e 's/^ *//g' -e 's/ *$//g')
+        | sed -e 's/^ *//g' -e 's/ *$//g' -e 's/(R)//' \
+              -e 's/(TM)//' -e 's/Intel Core/Core/' -e 's/ CPU//'
+        )
 arch=$(uname -m)
 ghcver="GHC $(ghc --version | sed 's/^.*version\s\+//g')"
 
