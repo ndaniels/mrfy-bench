@@ -203,8 +203,8 @@ function run_benchmark {
 
   benchtime=$(array_sum "${hmm_times[*]}")
 
-  printf "%s\ttotal\t%f\t%s\t%s\t%s\n" "$benchname" "$benchtime" \
-    "$arch" "$cpuid" "$ghcver"
+  printf "%-13s  %6.2fs  %6s  %-8s  %-6s  %s\n" "$benchname" "$benchtime" \
+    "$(hostname)" "$arch" "$ghcver" "$cpuid"
 }
 
 function run_mrfy {
