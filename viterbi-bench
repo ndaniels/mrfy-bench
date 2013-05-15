@@ -82,18 +82,38 @@ user_checkouts=
 verbose=
 column=
 valgrind_opts=
+parallel_run=
+rundirs=()
+
+function build_checkout {
+  {
+    err "### Building $(basename $1)"
+    cd "$1"
+    cabal configure >&2
+    cabal build >&2
+    cp dist/build/mrfy/mrfy ./
+  }
+}
+
+
+
 while true; do
   case $1 in
     -smurf)    smurf="yes" ; shift ;;
-    -s)        mode="short" ; shift ;;
-    -m)        mode="med" ; shift ;;
-    -l)        mode="long" ; shift ;;
-    -valgrind) mode="valgrind" ; shift ;;
+    -s)        mode_opt="$1" ; mode="short" ; shift ;;
+    -m)        mode_opt="$1" ; mode="med" ; shift ;;
+    -l)        mode_opt="$1" ; mode="long" ; shift ;;
+    -valgrind) mode_opt="$1" ; mode="valgrind" ; shift ;;
     -b)        user_checkouts="$2" ; shift 2 ;;
     -v)        verbose="yes" ; shift ;;
     -col)      column="yes" ; shift ;;
     -h)        usage ;;
     -skip)     skip["$2"]=yes ; shift ; shift ;;
+    -p)        parallel_run=yes ; shift ;;
+    -build)    shift ; for i do build_checkout "$i" ; done
+               exit 0
+               ;;
+    -run)      shift ; rundirs=("$@") ; break ;;
     --)
       shift
       valgrind_opts="$@"
@@ -301,15 +321,6 @@ function is_checkout {
   [ -f "$checkout/mrfy.cabal" ]
 }
 
-function build_checkout {
-  (
-    cd "$1"
-    cabal configure >&2
-    cabal build >&2
-    cp dist/build/mrfy/mrfy ./
-  )
-}
-
 function outfmt {
   if [ -z "$column" ]; then
     cat
@@ -318,33 +329,52 @@ function outfmt {
   fi
 }
 
-{
-  if [ -n "$smurf" ]; then
-    run_benchmark
-  fi
 
-  dirs=$(find -L $MRFY_CHECKOUTS_PATH -type d \
-              -and -not -wholename '*.git*' \
-              -and -not -wholename '*/dist*')
-  checkouts=()
-  basenames=()
-  for dir in $dirs; do
-    if ! [[ -h "$dir" ]] && is_checkout "$dir" && checkout_matched "$dir" &&
-       [[ -z "${skip[$(basename "$dir")]}" ]]
-    then
-      checkouts+=("$dir")
-      basenames+=("$(basename "$dir")")
-    fi
-  done
-  for dir in "${checkouts[@]}"; do
-    err "### Building $dir ###"
-    build_checkout "$dir"
-  done
-  err "### Running ${basenames[*]}"
-  for dir in "${checkouts[@]}"; do
+if [[ ${#rundirs[*]} -gt 0 ]]; then
+  for dir in "${rundirs[@]}"
+  do
     run_benchmark "$dir"
-  done
+  done | outfmt
+
+else
+
+  {
+    if [ -n "$smurf" ]; then
+      run_benchmark
+    fi
+
+    dirs=$(find -L $MRFY_CHECKOUTS_PATH -type d \
+                -and -not -wholename '*.git*' \
+                -and -not -wholename '*/dist*')
+    checkouts=()
+    basenames=()
+    for dir in $dirs; do
+      if ! [[ -h "$dir" ]] && is_checkout "$dir" && checkout_matched "$dir" &&
+         [[ -z "${skip[$(basename "$dir")]}" ]]
+      then
+        checkouts+=("$dir")
+        basenames+=("$(basename "$dir")")
+      fi
+    done
+    if [[ -x /usr/bin/parallel ]]; then
+      /usr/bin/parallel "$0" -build -- "${checkouts[@]}"
+    else
+      # this code is claimed on SO to run in parallel, but NR can't make it work
+      for dir in "${checkouts[@]}"; do
+        echo "$dir"
+      done | xargs -P ${NPROC:-4} "$0" -build
+    fi
+
+    err "### Running $mode: ${basenames[*]}"
+    if [[ -n "$parallel_run" && -x /usr/bin/parallel ]]; then
+      /usr/bin/parallel "$0" $mode_opt -run -- "${checkouts[@]}"
+    else
+      for dir in "${checkouts[@]}"; do
+        run_benchmark "$dir"
+      done
+    fi
 
 
-} | outfmt
+  } | outfmt
 
+fi
