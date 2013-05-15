@@ -107,7 +107,7 @@ smurf_exec="$SMURF_PATH/smurf"
 
 if [ -z "$MRFY_CHECKOUTS_PATH" ]; then
   err "MRFY_CHECKOUTS_PATH is unset; set it to directory containing checked-out branches."
-  usage
+  exit 1
 fi
 if [ -z "$mode" ]; then
   err "No benchmark specified."
