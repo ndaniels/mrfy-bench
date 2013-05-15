@@ -33,7 +33,7 @@ function usage {
            
   -smurf   When set, "smurf" is run on the benchmark instead
            of mrfy.
-           The SMURF_DAT_PATH environment variable must be
+           The SMURF_PATH environment variable must be
            set to the directory containing the "smurf"
            executable and the beta "dat" files.
 
