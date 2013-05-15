@@ -103,7 +103,7 @@ data_exposed="$SMURF_PATH/betaDataExposedRevised.dat"
 smurf_exec="$SMURF_PATH/smurf"
 
 if [ -z "$MRFY_CHECKOUTS_PATH" ]; then
-  err "The MRFY_CHECKOUTS_PATH is not set."
+  err "MRFY_CHECKOUTS_PATH is unset; set it to directory containing checked-out branches."
   usage
 fi
 if [ -z "$mode" ]; then
