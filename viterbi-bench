@@ -253,11 +253,12 @@ function run_mrfy {
   checkout="$1"
   hmm="$2"
   query_file="$3"
+  bin="$checkout"/dist/build/mrfy/mrfy
 
   if [ "$mode" = valgrind ]; then
-    valgrind ${valgrind_opts[@]} "$checkout"/mrfy -viterbi "$hmm" "$query_file"
+    valgrind ${valgrind_opts[@]} "$bin" -viterbi "$hmm" "$query_file"
   else
-    timeit "$checkout"/mrfy -viterbi "$hmm" "$query_file"
+    timeit "$bin" -viterbi "$hmm" "$query_file"
   fi
 }
 
