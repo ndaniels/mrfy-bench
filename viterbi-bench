@@ -31,8 +31,8 @@ function usage {
 
   protip: viterbi-bench -col [ args ]
            
-  -smurf   When set, "smurf" is run on the benchmark instead
-           of mrfy.
+  -smurf   When set, "smurf" is run on the benchmark in
+           to mrfy.
            The SMURF_PATH environment variable must be
            set to the directory containing the "smurf"
            executable and the beta "dat" files.
@@ -120,6 +120,7 @@ cpuid=$(grep 'model name' /proc/cpuinfo \
         | cut -d':' -f2 \
         | sed -e 's/^ *//g' -e 's/ *$//g')
 arch=$(uname -m)
+ghcver="GHC $(ghc --version | sed 's/^.*version\s\+//g')"
 
 query_file=
 template_dir=
@@ -173,14 +174,16 @@ function run_benchmark {
     done
 
     besttime=$(array_min "${pass_times[*]}")
-    msgf "%s\t%s\t%f\t%s\t%s\n" \
-      "$benchname" "$(basename "$hmm")" "$besttime" "$arch" "$cpuid"
+    msgf "%s\t%s\t%f\t%s\t%s\t%s\n" \
+      "$benchname" "$(basename "$hmm")" "$besttime" \
+      "$arch" "$cpuid" "$ghcver"
     hmm_times=("${hmm_times[@]}" "$besttime")
   done
 
   benchtime=$(array_sum "${hmm_times[*]}")
 
-  printf "%s\ttotal\t%f\t%s\t%s\n" "$benchname" "$benchtime" "$arch" "$cpuid"
+  printf "%s\ttotal\t%f\t%s\t%s\t%s\n" "$benchname" "$benchtime" \
+    "$arch" "$cpuid" "$ghcver"
 }
 
 function run_mrfy {
