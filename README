@@ -14,9 +14,9 @@ viterbi-bench must be run inside the mrfy-bench directory.
 
 protip: viterbi-bench -col [ args ]
          
--smurf   When set, "smurf" is run on the benchmark instead
-         of mrfy.
-         The SMURF_DAT_PATH environment variable must be
+-smurf   When set, "smurf" is run on the benchmark in
+         to mrfy.
+         The SMURF_PATH environment variable must be
          set to the directory containing the "smurf"
          executable and the beta "dat" files.
 
