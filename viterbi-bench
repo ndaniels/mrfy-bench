@@ -245,7 +245,7 @@ function run_benchmark {
   shortbench=$(lua5.1 -e "s=[[$benchname]];
                           io.stdout:write(#s <= 13 and s or '...' .. s:sub(-10,-1))")
 
-  printf "%-21s  %6.2fs  %6s  %-6s  %s\n" "$shortbench $git$dirty" "$benchtime" \
+  printf "%-22s  %7.2fs  %6s  %-6s  %s\n" "$shortbench $git$dirty" "$benchtime" \
      "$arch" "$ghcver" "$cpuid"
 }
 
