@@ -13,30 +13,38 @@ benchmark.
 viterbi-bench must be run inside the mrfy-bench directory.
 
 protip: viterbi-bench -col [ args ]
+
+Using valgrind:
+
+  viterbi-bench -valgrind -- --leak-check=full
          
--smurf   When set, "smurf" is run on the benchmark in
-         to mrfy.
-         The SMURF_PATH environment variable must be
-         set to the directory containing the "smurf"
-         executable and the beta "dat" files.
+-smurf     When set, "smurf" is run on the benchmark in
+           to mrfy.
+           The SMURF_PATH environment variable must be
+           set to the directory containing the "smurf"
+           executable and the beta "dat" files.
 
--s       Benchmark that takes 5-10 seconds.
+-s         Benchmark that takes 5-10 seconds.
 
--m       Benchmark that takes 2 minutes and reports the
-         better of two passes for each template.
+-m         Benchmark that takes 2 minutes and reports the
+           better of two passes for each template.
 
--l       Benchmark that takes a significant amount of time.
-         Reports the best of five passes for each template.
+-l         Benchmark that takes a significant amount of time.
+           Reports the best of five passes for each template.
+
+-valgrind  A benchmark small enough to be profiled by valgrind.
+           When set, "valgrind" is run with options provided
+           after "--". (See example above.)
 
 -b "dir-name [ dir-name [ ... ] ]"
-         A single string with a space delimited list of
-         directory names to run benchmarks on.
+           A single string with a space delimited list of
+           directory names to run benchmarks on.
 
--v       Show extra output, like the times for each HMM.
+-v         Show extra output, like the times for each HMM.
 
--col     Pipes output through "column".
+-col       Pipes output through "column".
 
--h       Show this usage information.
+-h         Show this usage information.
 
 
 README for `mrfy-bench`

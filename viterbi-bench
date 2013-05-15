@@ -14,7 +14,7 @@ function msgf {
 
 function usage {
   err
-  err "Usage: $(basename $0) [ -smurf ] ( -s | -m | -l )"
+  err "Usage: $(basename $0) [ -smurf ] ( -s | -m | -l | -valgrind )"
   cat 2>&1 <<EOF
 
   viterbi-bench benchmarks a set of variations of the Viterbi
@@ -30,30 +30,38 @@ function usage {
   viterbi-bench must be run inside the mrfy-bench directory.
 
   protip: viterbi-bench -col [ args ]
+
+  Using valgrind:
+
+    viterbi-bench -valgrind -- --leak-check=full
            
-  -smurf   When set, "smurf" is run on the benchmark in
-           to mrfy.
-           The SMURF_PATH environment variable must be
-           set to the directory containing the "smurf"
-           executable and the beta "dat" files.
+  -smurf     When set, "smurf" is run on the benchmark in
+             to mrfy.
+             The SMURF_PATH environment variable must be
+             set to the directory containing the "smurf"
+             executable and the beta "dat" files.
 
-  -s       Benchmark that takes 5-10 seconds.
+  -s         Benchmark that takes 5-10 seconds.
 
-  -m       Benchmark that takes 2 minutes and reports the
-           better of two passes for each template.
+  -m         Benchmark that takes 2 minutes and reports the
+             better of two passes for each template.
 
-  -l       Benchmark that takes a significant amount of time.
-           Reports the best of five passes for each template.
+  -l         Benchmark that takes a significant amount of time.
+             Reports the best of five passes for each template.
+
+  -valgrind  A benchmark small enough to be profiled by valgrind.
+             When set, "valgrind" is run with options provided
+             after "--". (See example above.)
 
   -b "dir-name [ dir-name [ ... ] ]"
-           A single string with a space delimited list of
-           directory names to run benchmarks on.
+             A single string with a space delimited list of
+             directory names to run benchmarks on.
 
-  -v       Show extra output, like the times for each HMM.
+  -v         Show extra output, like the times for each HMM.
 
-  -col     Pipes output through "column".
+  -col       Pipes output through "column".
 
-  -h       Show this usage information.
+  -h         Show this usage information.
 EOF
   exit 1
 }
@@ -63,16 +71,23 @@ smurf=
 user_checkouts=
 verbose=
 column=
+valgrind_opts=
 while true; do
   case $1 in
-    -smurf) smurf="yes" ; shift ;;
-    -s)     mode="short" ; shift ;;
-    -m)     mode="med" ; shift ;;
-    -l)     mode="long" ; shift ;;
-    -b)     user_checkouts="$2" ; shift 2 ;;
-    -v)     verbose="yes" ; shift ;;
-    -col)   column="yes" ; shift ;;
-    -h)     usage ;;
+    -smurf)    smurf="yes" ; shift ;;
+    -s)        mode="short" ; shift ;;
+    -m)        mode="med" ; shift ;;
+    -l)        mode="long" ; shift ;;
+    -valgrind) mode="valgrind" ; shift ;;
+    -b)        user_checkouts="$2" ; shift 2 ;;
+    -v)        verbose="yes" ; shift ;;
+    -col)      column="yes" ; shift ;;
+    -h)        usage ;;
+    --)
+      shift
+      valgrind_opts="$@"
+      break
+      ;;
     -*)
       err "Unrecognized option $1"
       usage
@@ -86,7 +101,6 @@ done
 data_buried="$SMURF_PATH/betaDataBuriedRevised.dat"
 data_exposed="$SMURF_PATH/betaDataExposedRevised.dat"
 smurf_exec="$SMURF_PATH/smurf"
-
 
 if [ -z "$MRFY_CHECKOUTS_PATH" ]; then
   err "The MRFY_CHECKOUTS_PATH is not set."
@@ -141,6 +155,11 @@ case $mode in
     template_dir="$PWD/long_templates"
     passes=5
     ;;
+  valgrind)
+    query_file="$PWD/queries/8.fasta"
+    template_dir="$PWD/valgrind_templates"
+    passes=1
+    ;;
   *)
     err "BUG: Unrecognized mode $mode"
     exit 1
@@ -191,7 +210,11 @@ function run_mrfy {
   hmm="$2"
   query_file="$3"
 
-  timeit "$checkout"/mrfy -viterbi "$hmm" "$query_file"
+  if [ "$mode" = valgrind ]; then
+    valgrind ${valgrind_opts[@]} "$checkout"/mrfy -viterbi "$hmm" "$query_file"
+  else
+    timeit "$checkout"/mrfy -viterbi "$hmm" "$query_file"
+  fi
 }
 
 function run_smurf {
