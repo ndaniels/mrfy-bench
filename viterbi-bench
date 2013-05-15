@@ -51,6 +51,14 @@ function usage {
   -l         Benchmark that takes a significant amount of time.
              Reports the best of five passes for each template.
 
+  -build dir ...     Build mrfy binaries and exit
+
+  -run dir ...       Run benchmarks in dirs and exit
+
+  -p         Run multiple benchmarks in parallel
+
+  -skip dir  Don't build or run benchmark in dir
+
   -valgrind  A benchmark small enough to be profiled by valgrind.
              When set, "valgrind" is run with options provided
              after "--". (See example above.)
