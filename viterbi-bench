@@ -266,10 +266,10 @@ function run_smurf {
   hmm="$1"
   query_file="$2"
 
-  {
+  (
     cd "$SMURF_PATH"
     timeit "$smurf_exec" "$hmm" "$query_file" /dev/null
-  }
+  )
 }
 
 function timeit {
