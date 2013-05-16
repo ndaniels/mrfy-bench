@@ -30,8 +30,6 @@ function usage {
   The -b option can be used to specify only some branches to
   benchmark.
 
-  viterbi-bench must be run inside the mrfy-bench directory.
-
   Using valgrind:
 
     viterbi-bench -valgrind -- --leak-check=full
@@ -169,25 +167,27 @@ ghcver="GHC $(ghc --version | sed 's/^.*version\s\+//g')"
 query_file=
 template_dir=
 passes=
+benchabs="$(readlink -f "$0")"
+benchdir="${benchabs%/*}"
 case $mode in
   short)
-    query_file="$PWD/queries/short.fasta"
-    template_dir="$PWD/short_templates"
+    query_file="$benchdir/queries/short.fasta"
+    template_dir="$benchdir/short_templates"
     passes=1
     ;;
   med)
-    query_file="$PWD/queries/short.fasta"
-    template_dir="$PWD/med_templates"
+    query_file="$benchdir/queries/short.fasta"
+    template_dir="$benchdir/med_templates"
     passes=2
     ;;
   long)
-    query_file="$PWD/queries/long.fasta"
-    template_dir="$PWD/long_templates"
+    query_file="$benchdir/queries/long.fasta"
+    template_dir="$benchdir/long_templates"
     passes=5
     ;;
   valgrind)
-    query_file="$PWD/queries/8.fasta"
-    template_dir="$PWD/valgrind_templates"
+    query_file="$benchdir/queries/8.fasta"
+    template_dir="$benchdir/valgrind_templates"
     passes=1
     ;;
   *)
