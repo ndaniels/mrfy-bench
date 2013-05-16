@@ -321,68 +321,51 @@ function is_checkout {
   [ -f "$checkout/mrfy.cabal" ]
 }
 
-function outfmt {
-  if [ -z "$column" ]; then
-    cat
-  else
-    column -t -s'	' # <- hidden '\t' character
-  fi
-}
-
-
 if [[ ${#rundirs[*]} -gt 0 ]]; then
   for dir in "${rundirs[@]}"
   do
     run_benchmark "$dir"
-  done | outfmt
-
+  done
 else
+  if [ -n "$smurf" ]; then
+    run_benchmark
+  fi
 
-  {
-    if [ -n "$smurf" ]; then
-      run_benchmark
+  dirs=$(find -L $MRFY_CHECKOUTS_PATH -type d \
+              -and -not -wholename '*.git*' \
+              -and -not -wholename '*/dist*')
+  checkouts=()
+  basenames=()
+  for dir in $dirs; do
+    if ! [[ -h "$dir" ]] && is_checkout "$dir" && checkout_matched "$dir" &&
+       [[ -z "${skip[$(basename "$dir")]}" ]]
+    then
+      checkouts+=("$dir")
+      basenames+=("$(basename "$dir")")
     fi
+  done
+  if [[ -x /usr/bin/parallel ]]; then
+    /usr/bin/parallel "$0" -build -- "${checkouts[@]}"
+  else
+    # this code is claimed on SO to run in parallel, but NR can't make it work
+    # xargs doco claims -P "probably" won't work without -n.
+    for dir in "${checkouts[@]}"; do
+      echo "$dir"
+    done | xargs -n 1 -P ${NPROC:-12} "$0" -build
+  fi
 
-    dirs=$(find -L $MRFY_CHECKOUTS_PATH -type d \
-                -and -not -wholename '*.git*' \
-                -and -not -wholename '*/dist*')
-    checkouts=()
-    basenames=()
-    for dir in $dirs; do
-      if ! [[ -h "$dir" ]] && is_checkout "$dir" && checkout_matched "$dir" &&
-         [[ -z "${skip[$(basename "$dir")]}" ]]
-      then
-        checkouts+=("$dir")
-        basenames+=("$(basename "$dir")")
-      fi
-    done
+  err "### $(date +'%F %H:%M')  Running $mode$parallel_run: ${basenames[*]}"
+  if [[ -n "$parallel_run" ]]; then
     if [[ -x /usr/bin/parallel ]]; then
-      /usr/bin/parallel "$0" -build -- "${checkouts[@]}"
+      /usr/bin/parallel "$0" $mode_opt -run -- "${checkouts[@]}"
     else
-      # this code is claimed on SO to run in parallel, but NR can't make it work
-      # xargs doco claims -P "probably" won't work without -n.
       for dir in "${checkouts[@]}"; do
         echo "$dir"
-      done | xargs -n 1 -P ${NPROC:-12} "$0" -build
+      done | xargs -n 1 -P ${NPROC:-12} "$0" $mode_opt -run
     fi
-
-    err "### $(date +'%F %H:%M')  Running $mode$parallel_run: ${basenames[*]}"
-    if [[ -n "$parallel_run" ]]; then
-      if [[ -x /usr/bin/parallel ]]; then
-        /usr/bin/parallel "$0" $mode_opt -run "${checkouts[@]}"
-      else
-        for dir in "${checkouts[@]}"; do
-          echo "$dir"
-        done | xargs -n 1 -P ${NPROC:-12} \
-                 "$0" $mode_opt -run "${checkouts[@]}"
-      fi
-    else
-      for dir in "${checkouts[@]}"; do
-        run_benchmark "$dir"
-      done
-    fi
-
-
-  } | outfmt
-
+  else
+    for dir in "${checkouts[@]}"; do
+      run_benchmark "$dir"
+    done
+  fi
 fi
