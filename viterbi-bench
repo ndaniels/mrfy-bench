@@ -215,7 +215,7 @@ function run_benchmark {
     benchname="smurf"
   else
     benchname=$(basename "$checkout")
-    git=$(cd "$checkout"; git log --format="%h" 'HEAD^..HEAD')
+    git=$(cd "$checkout"; git log --no-merges --format="%h" 'HEAD^..HEAD')
     { cd "$checkout" ; if git status --porcelain | grep '^ M ' > /dev/null; then
                          dirty="*"
                        fi
