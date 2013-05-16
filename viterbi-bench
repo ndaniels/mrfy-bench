@@ -174,7 +174,7 @@ ghcver="GHC $(ghc --version \
 query_file=
 template_dir=
 passes=
-if command -V greadlink; then
+if command -V greadlink > /dev/null 2>&1; then
   benchabs="$(greadlink -f "$0")"
 else
   benchabs="$(readlink -f "$0")"
