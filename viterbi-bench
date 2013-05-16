@@ -69,8 +69,6 @@ function usage {
 
   -v         Show extra output, like the times for each HMM.
 
-  -col       Pipes output through "column".
-
   -h         Show this usage information.
 EOF
   exit 1
