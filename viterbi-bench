@@ -32,8 +32,6 @@ function usage {
 
   viterbi-bench must be run inside the mrfy-bench directory.
 
-  protip: viterbi-bench -col [ args ]
-
   Using valgrind:
 
     viterbi-bench -valgrind -- --leak-check=full
