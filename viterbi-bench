@@ -2,7 +2,7 @@
 
 set -e
 
-declare -A skip
+declare -a skip
 
 function err {
   echo "$*" >&2
@@ -154,21 +154,31 @@ fi
 ################################################################################
 # Benchmarking
 ################################################################################
-
-cpuid=$(grep 'model name' /proc/cpuinfo \
-        | head -n 1 \
-        | cut -d':' -f2 \
+if [ -r /proc/cpuinfo ]; then
+  cpustr=$(grep 'model name' /proc/cpuinfo \
+          | head -n 1 \
+          | cut -d':' -f2
+          )
+else
+  cpustr=$(sysctl -n machdep.cpu.brand_string)
+fi
+cpuid=$(echo $cpustr \
         | sed -e 's/^ *//g' -e 's/ *$//g' -e 's/(R)//' \
               -e 's/(TM)//' -e 's/Intel Core/Core/' -e 's/ CPU//' \
               -e 's/(tm)//' -e 's/Quad-Core Processor//'
         )
 arch=$(uname -m)
-ghcver="GHC $(ghc --version | sed 's/^.*version\s\+//g')"
+ghcver="GHC $(ghc --version \
+            | sed -e 's/^.*version//g' -e 's/^ *//g' -e 's/ *$//g')"
 
 query_file=
 template_dir=
 passes=
-benchabs="$(readlink -f "$0")"
+if command -V greadlink; then
+  benchabs="$(greadlink -f "$0")"
+else
+  benchabs="$(readlink -f "$0")"
+fi
 benchdir="${benchabs%/*}"
 case $mode in
   short)
@@ -240,10 +250,11 @@ function run_benchmark {
 
   benchtime=$(array_sum "${hmm_times[*]}")
 
-  shortbench=$(lua5.1 -e "s=[[$benchname]];
-                          io.stdout:write(#s <= 13
-                                            and s
-                                            or '...' .. s:sub(-10,-1))")
+  if [ ${#benchname} -le 13 ]; then
+    shortbench=$benchname
+  else
+    shortbench=${benchname:(-10)}
+  fi
 
   printf "%-22s  %7.2fs  %6s  %-6s  %s\n" "$shortbench $git$dirty" \
      "$benchtime" "$arch" "$ghcver" "$cpuid"
@@ -273,7 +284,11 @@ function run_smurf {
 }
 
 function timeit {
-  /usr/bin/env time -f '%e' /bin/sh -c "$* > /dev/null 2>&1" 2>&1
+  if command -V gtime > /dev/null 2>&1; then
+    gtime -f '%e' /bin/sh -c "$* > /dev/null 2>&1" 2>&1
+  else
+    /usr/bin/env time -f '%e' /bin/sh -c "$* > /dev/null 2>&1" 2>&1
+  fi
   # /usr/bin/env time -f '%e' /bin/sh -c "$*" 
 }
 
