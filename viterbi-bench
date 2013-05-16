@@ -16,7 +16,8 @@ function msgf {
 
 function usage {
   err
-  err "Usage: $(basename $0) [-skip basename ...] [ -smurf ] ( -s | -m | -l | -valgrind )"
+  err "Usage: $(basename $0) [-skip basename ...] [ -smurf ]" \
+      "( -s | -m | -l | -valgrind )"
   cat 2>&1 <<EOF
 
   viterbi-bench benchmarks a set of variations of the Viterbi
@@ -130,7 +131,8 @@ data_exposed="$SMURF_PATH/betaDataExposedRevised.dat"
 smurf_exec="$SMURF_PATH/smurf"
 
 if [ -z "$MRFY_CHECKOUTS_PATH" ]; then
-  err "MRFY_CHECKOUTS_PATH is unset; set it to directory containing checked-out branches."
+  err "MRFY_CHECKOUTS_PATH is unset;" \
+      "set it to directory containing checked-out branches."
   exit 1
 fi
 if [ -z "$mode" ]; then
@@ -240,10 +242,12 @@ function run_benchmark {
   benchtime=$(array_sum "${hmm_times[*]}")
 
   shortbench=$(lua5.1 -e "s=[[$benchname]];
-                          io.stdout:write(#s <= 13 and s or '...' .. s:sub(-10,-1))")
+                          io.stdout:write(#s <= 13
+                                            and s
+                                            or '...' .. s:sub(-10,-1))")
 
-  printf "%-22s  %7.2fs  %6s  %-6s  %s\n" "$shortbench $git$dirty" "$benchtime" \
-     "$arch" "$ghcver" "$cpuid"
+  printf "%-22s  %7.2fs  %6s  %-6s  %s\n" "$shortbench $git$dirty" \
+     "$benchtime" "$arch" "$ghcver" "$cpuid"
 }
 
 function run_mrfy {
