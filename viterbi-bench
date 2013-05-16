@@ -86,13 +86,13 @@ parallel_run=
 rundirs=()
 
 function build_checkout {
-  {
+  (
     err "### Building $(basename $1)"
     cd "$1"
     cabal configure >&2
     cabal build >&2
     cp dist/build/mrfy/mrfy ./
-  }
+  )
 }
 
 
