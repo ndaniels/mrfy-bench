@@ -95,8 +95,6 @@ function build_checkout {
   )
 }
 
-
-
 while true; do
   case $1 in
     -smurf)    smurf="yes" ; shift ;;
@@ -362,14 +360,22 @@ else
       /usr/bin/parallel "$0" -build -- "${checkouts[@]}"
     else
       # this code is claimed on SO to run in parallel, but NR can't make it work
+      # xargs doco claims -P "probably" won't work without -n.
       for dir in "${checkouts[@]}"; do
         echo "$dir"
-      done | xargs -P ${NPROC:-4} "$0" -build
+      done | xargs -n 1 -P ${NPROC:-12} "$0" -build
     fi
 
     err "### $(date +'%F %H:%M')  Running $mode$parallel_run: ${basenames[*]}"
-    if [[ -n "$parallel_run" && -x /usr/bin/parallel ]]; then
-      /usr/bin/parallel "$0" $mode_opt -run -- "${checkouts[@]}"
+    if [[ -n "$parallel_run" ]]; then
+      if [[ -x /usr/bin/parallel ]]; then
+        /usr/bin/parallel "$0" $mode_opt -run "${checkouts[@]}"
+      else
+        for dir in "${checkouts[@]}"; do
+          echo "$dir"
+        done | xargs -n 1 -P ${NPROC:-12} \
+                 "$0" $mode_opt -run "${checkouts[@]}"
+      fi
     else
       for dir in "${checkouts[@]}"; do
         run_benchmark "$dir"
