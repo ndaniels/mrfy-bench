@@ -65,6 +65,7 @@ function usage {
              directory names to run benchmarks on.
 
   -v         Show extra output, like the times for each HMM.
+             Does not work with -p.
 
   -h         Show this usage information.
 EOF
