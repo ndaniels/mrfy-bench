@@ -1,50 +1,6 @@
 README for `viterbi-bench`
 ==========================
-viterbi-bench benchmarks a set of variations of the Viterbi
-algorithm implemented in MRFy. viterbi-bench requires that
-the MRFY_CHECKOUTS_PATH is set to a directory containing
-git checkouts of MRFy branches. By default, viterbi-bench
-recursively searches the directory for checkouts and runs
-the benchmark specified against all of them.
-
-The -b option can be used to specify only some branches to
-benchmark.
-
-viterbi-bench must be run inside the mrfy-bench directory.
-
-protip: viterbi-bench -col [ args ]
-
-Using valgrind:
-
-  viterbi-bench -valgrind -- --leak-check=full
-         
--smurf     When set, "smurf" is run on the benchmark in
-           to mrfy.
-           The SMURF_PATH environment variable must be
-           set to the directory containing the "smurf"
-           executable and the beta "dat" files.
-
--s         Benchmark that takes 5-10 seconds.
-
--m         Benchmark that takes 2 minutes and reports the
-           better of two passes for each template.
-
--l         Benchmark that takes a significant amount of time.
-           Reports the best of five passes for each template.
-
--valgrind  A benchmark small enough to be profiled by valgrind.
-           When set, "valgrind" is run with options provided
-           after "--". (See example above.)
-
--b "dir-name [ dir-name [ ... ] ]"
-           A single string with a space delimited list of
-           directory names to run benchmarks on.
-
--v         Show extra output, like the times for each HMM.
-
--col       Pipes output through "column".
-
--h         Show this usage information.
+See `viterbi-bench -h`
 
 
 README for `mrfy-bench`
