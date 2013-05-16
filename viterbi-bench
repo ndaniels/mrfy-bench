@@ -327,10 +327,6 @@ if [[ ${#rundirs[*]} -gt 0 ]]; then
     run_benchmark "$dir"
   done
 else
-  if [ -n "$smurf" ]; then
-    run_benchmark
-  fi
-
   dirs=$(find -L $MRFY_CHECKOUTS_PATH -type d \
               -and -not -wholename '*.git*' \
               -and -not -wholename '*/dist*')
@@ -355,6 +351,9 @@ else
   fi
 
   err "### $(date +'%F %H:%M')  Running $mode$parallel_run: ${basenames[*]}"
+  if [ -n "$smurf" ]; then
+    run_benchmark
+  fi
   if [[ -n "$parallel_run" ]]; then
     if [[ -x /usr/bin/parallel ]]; then
       /usr/bin/parallel "$0" $mode_opt -run -- "${checkouts[@]}"
