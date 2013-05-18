@@ -346,7 +346,7 @@ if [[ ${#rundirs[*]} -gt 0 ]]; then
     run_benchmark "$dir"
   done
 else
-  dirs=$(find -L $MRFY_CHECKOUTS_PATH -type d \
+  dirs=$(find -L $MRFY_CHECKOUTS_PATH -maxdepth 1 -type d \
               -and -not -wholename '*.git*' \
               -and -not -wholename '*/dist*')
   checkouts=()
