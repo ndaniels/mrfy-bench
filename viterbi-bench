@@ -54,6 +54,8 @@ function usage {
 
   -p         Run multiple benchmarks in parallel
 
+  -passes N  Run N passes (defaults vary by benchmark)
+
   -skip dir  Don't build or run benchmark in dir
 
   -valgrind  A benchmark small enough to be profiled by valgrind.
@@ -80,6 +82,7 @@ column=
 valgrind_opts=
 parallel_run=
 rundirs=()
+passes=
 
 function build_checkout {
   (
@@ -104,6 +107,7 @@ while true; do
     -h)        usage ;;
     -skip)     skip["$2"]=yes ; shift ; shift ;;
     -p)        parallel_run=" parallel" ; shift ;;
+    -passes)   passes="$2" ; shift ; shift ;;
     -build)    shift ; for i do build_checkout "$i" ; done
                exit 0
                ;;
@@ -173,7 +177,6 @@ ghcver="GHC $(ghc --version \
 
 query_file=
 template_dir=
-passes=
 if command -V greadlink > /dev/null 2>&1; then
   benchabs="$(greadlink -f "$0")"
 else
@@ -184,22 +187,22 @@ case $mode in
   short)
     query_file="$benchdir/queries/short.fasta"
     template_dir="$benchdir/short_templates"
-    passes=1
+    passes=${passes:-1}
     ;;
   med)
     query_file="$benchdir/queries/short.fasta"
     template_dir="$benchdir/med_templates"
-    passes=2
+    passes=${passes:-2}
     ;;
   long)
     query_file="$benchdir/queries/long.fasta"
     template_dir="$benchdir/long_templates"
-    passes=5
+    passes=${passes:-5}
     ;;
   valgrind)
     query_file="$benchdir/queries/8.fasta"
     template_dir="$benchdir/valgrind_templates"
-    passes=1
+    passes=${passes:-1}
     ;;
   *)
     err "BUG: Unrecognized mode $mode"
