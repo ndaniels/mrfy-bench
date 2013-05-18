@@ -169,7 +169,8 @@ fi
 cpuid=$(echo $cpustr \
         | sed -e 's/^ *//g' -e 's/ *$//g' -e 's/(R)//' \
               -e 's/(TM)//' -e 's/Intel Core/Core/' -e 's/ CPU//' \
-              -e 's/(tm)//' -e 's/Quad-Core Processor//'
+              -e 's/(tm)//' -e 's/Quad-Core Processor//' \
+              -e 's/ Processor//'
         )
 arch=$(uname -m)
 ghcver="GHC $(ghc --version \
