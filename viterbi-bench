@@ -183,7 +183,7 @@ if command -V greadlink > /dev/null 2>&1; then
 else
   benchabs="$(readlink -f "$0")"
 fi
-benchdir="${benchabs%/*}"
+benchdir="$(dirname "$benchabs")"
 case $mode in
   short)
     query_file="$benchdir/queries/short.fasta"
