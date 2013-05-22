@@ -258,7 +258,7 @@ function run_benchmark {
   if [ ${#benchname} -le 13 ]; then
     shortbench=$benchname
   else
-    shortbench=${benchname:(-10)}
+    shortbench="...${benchname:(-10)}"
   fi
 
   printf "%-22s  %7.2fs  %6s  %-6s  %s\n" "$shortbench $git$dirty" \
