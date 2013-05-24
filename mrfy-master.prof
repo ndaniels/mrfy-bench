@@ -1,0 +1,256 @@
+	Thu May 16 19:42 2013 Time and Allocation Profiling Report  (Final)
+
+	   mrfy +RTS -p -RTS -viterbi short_templates/micro8.hmm+ queries/long.fasta
+
+	total time  =       12.41 secs   (12409 ticks @ 1000 us, 1 processor)
+	total alloc = 6,901,903,664 bytes  (excludes profiling overheads)
+
+COST CENTRE         MODULE    %time %alloc
+
+viterbi.vee'        Viterbi    19.5   24.2
+viterbi.vee'.avSum  Viterbi    19.1    9.9
+viterbi.vee'.from   Viterbi    13.0    6.5
+viterbi.vee'.from   Viterbi     8.3    4.3
+viterbi.vee''       Viterbi     7.7   27.2
+inRange             MRFTypes    4.8    0.0
+/+/                 Score       3.7    7.8
+/!/                 Constants   3.4    1.9
+transScoreNode.edge Viterbi     3.3    0.0
+emissionScoreNode   Viterbi     2.8    1.4
+fmap                Score       2.6    3.0
+transScoreNode      Viterbi     2.5    0.0
+emissionScore       Viterbi     1.8    2.8
+viterbi.aScore      Viterbi     1.5    0.0
+transScore          Viterbi     1.5    5.1
+compare             Score       1.1    0.0
+viterbi.extend      Viterbi     0.7    1.8
+loadTestData        FileOps     0.6    1.4
+
+
+                                                                                                     individual     inherited
+COST CENTRE                                     MODULE                             no.     entries  %time %alloc   %time %alloc
+
+MAIN                                            MAIN                               190           0    0.0    0.0   100.0  100.0
+ main                                           Main                               381           0    0.0    0.0   100.0  100.0
+  runCommand                                    FileOps                            384           1    0.3    0.0   100.0  100.0
+   runCommand.scores                            FileOps                            388           1    0.0    0.0    98.5   97.0
+    runCommand.vTest                            FileOps                            389        1852    0.0    0.0    98.5   97.0
+     show                                       Score                              581        1852    0.4    0.4     0.4    0.4
+     viterbi.vee'.cons                          Viterbi                            557        1852    0.0    0.0     0.0    0.0
+     viterbi                                    Viterbi                            485        1852    0.0    0.0    98.1   96.6
+      viterbi.extend                            Viterbi                            537        1852    0.0    0.0     0.0    0.0
+      viterbi.vee'                              Viterbi                            536           0    0.0    0.0     0.1    0.0
+       +                                        Score                              553        3704    0.0    0.0     0.0    0.0
+       viterbi.eScore                           Viterbi                            549           0    0.0    0.0     0.0    0.0
+        emissionScore                           Viterbi                            550        3704    0.0    0.0     0.0    0.0
+         emissionScoreNode                      Viterbi                            551        3704    0.0    0.0     0.0    0.0
+          /!/                                   Constants                          552        3704    0.0    0.0     0.0    0.0
+       viterbi.aScore                           Viterbi                            543           0    0.0    0.0     0.0    0.0
+        transScore                              Viterbi                            544        7408    0.0    0.0     0.0    0.0
+         transScoreNode                         Viterbi                            545        7408    0.0    0.0     0.0    0.0
+          transScoreNode.edge                   Viterbi                            546        7408    0.0    0.0     0.0    0.0
+       viterbi.extend                           Viterbi                            538           0    0.0    0.0     0.0    0.0
+      viterbi.eScore                            Viterbi                            513        1852    0.0    0.0     0.0    0.0
+      viterbi.seqlen                            Viterbi                            506        1852    0.0    0.0     0.0    0.0
+      viterbi.vee''                             Viterbi                            500        1852    7.7   27.2    97.8   95.9
+       viterbi.vee'                             Viterbi                            512     6421912   19.5   24.2    86.7   68.8
+        viterbi.aScore                          Viterbi                            577           0    0.0    0.0     0.0    0.0
+         transScore                             Viterbi                            578        1852    0.0    0.0     0.0    0.0
+          transScoreNode                        Viterbi                            579        1852    0.0    0.0     0.0    0.0
+           transScoreNode.edge                  Viterbi                            580        1852    0.0    0.0     0.0    0.0
+        viterbi.vee'.from                       Viterbi                            567     2331200    8.3    4.3    11.3    6.8
+         /+/                                    Score                              574     2331200    0.7    1.4     0.8    1.4
+          +                                     Score                              575     2331200    0.1    0.0     0.1    0.0
+         unsafeIndex                            MRFTypes                           573     2331200    0.0    0.0     0.0    0.0
+         inRange                                MRFTypes                           572     2331200    0.3    0.0     0.3    0.0
+         viterbi.aScore                         Viterbi                            568           0    0.4    0.0     1.9    1.1
+          transScore                            Viterbi                            569     2331200    0.3    1.1     1.5    1.1
+           transScoreNode                       Viterbi                            570     2331200    0.5    0.0     1.2    0.0
+            transScoreNode.edge                 Viterbi                            571     2331200    0.7    0.0     0.7    0.0
+        viterbi.vee'.from                       Viterbi                            558     3485688   13.0    6.5    17.3   10.1
+         /+/                                    Score                              565     3485688    0.9    2.0     1.0    2.0
+          +                                     Score                              566     3485688    0.0    0.0     0.0    0.0
+         unsafeIndex                            MRFTypes                           564     3485688    0.0    0.0     0.0    0.0
+         inRange                                MRFTypes                           563     3485688    0.3    0.0     0.3    0.0
+         viterbi.aScore                         Viterbi                            559           0    0.4    0.0     2.9    1.6
+          transScore                            Viterbi                            560     3485688    0.5    1.6     2.5    1.6
+           transScoreNode                       Viterbi                            561     3485688    0.9    0.0     2.0    0.0
+            transScoreNode.edge                 Viterbi                            562     3485688    1.1    0.0     1.1    0.0
+        fmap                                    Score                              556     1746548    0.9    1.2     0.9    1.2
+        /+/                                     Score                              554     4070340    0.5    1.3     0.6    1.3
+         +                                      Score                              555     2323792    0.0    0.0     0.0    0.0
+        unsafeIndex                             MRFTypes                           548      580948    0.0    0.0     0.0    0.0
+        inRange                                 MRFTypes                           547      580948    0.1    0.0     0.1    0.0
+        +                                       Score                              542     2325644    0.0    0.0     0.0    0.0
+        viterbi.extend                          Viterbi                            539           0    0.7    1.8     2.4    3.6
+         fmap                                   Score                              540     3489392    1.7    1.8     1.7    1.8
+        viterbi.vee'.avSum                      Viterbi                            521     5239644   19.1    9.9    25.4   15.4
+         /+/                                    Score                              534     5239644    1.5    3.0     1.7    3.0
+          +                                     Score                              535     5239644    0.2    0.0     0.2    0.0
+         unsafeIndex                            MRFTypes                           527     5239644    0.0    0.0     0.0    0.0
+         inRange                                MRFTypes                           526     5239644    0.7    0.0     0.7    0.0
+         viterbi.aScore                         Viterbi                            522           0    0.8    0.0     3.9    2.4
+          transScore                            Viterbi                            523     5239644    0.7    2.4     3.2    2.4
+           transScoreNode                       Viterbi                            524     5239644    1.1    0.0     2.5    0.0
+            transScoreNode.edge                 Viterbi                            525     5239644    1.4    0.0     1.4    0.0
+        compare                                 Score                              520           0    1.1    0.0     1.1    0.0
+        viterbi.eScore                          Viterbi                            514           0    0.3    0.0     8.3    6.1
+         emissionScore                          Viterbi                            515     4068488    1.8    2.8     8.0    6.1
+          emissionScoreNode                     Viterbi                            516     4068488    2.8    1.4     6.1    3.3
+           /!/                                  Constants                          517     4068488    3.4    1.9     3.4    1.9
+       range                                    MRFTypes                           505        1852    0.0    0.0     0.0    0.0
+       unsafeIndex                              MRFTypes                           504        7408    0.0    0.0     0.0    0.0
+       inRange                                  MRFTypes                           503    11650444    3.4    0.0     3.4    0.0
+      viterbi.aScore                            Viterbi                            490        1852    0.0    0.0     0.0    0.0
+      compare                                   Score                              489           0    0.0    0.0     0.0    0.0
+      viterbi.transN                            Viterbi                            487        5556    0.2    0.6     0.2    0.6
+       +                                        Score                              576        5556    0.0    0.0     0.0    0.0
+       viterbi.aScore                           Viterbi                            491           0    0.0    0.0     0.0    0.0
+        transScore                              Viterbi                            492        5556    0.0    0.0     0.0    0.0
+         transScoreNode                         Viterbi                            493        5556    0.0    0.0     0.0    0.0
+          transScoreNode.edge                   Viterbi                            494        5556    0.0    0.0     0.0    0.0
+      viterbi.numNodes                          Viterbi                            486        1852    0.0    0.0     0.0    0.0
+   loadTestData                                 FileOps                            386           1    0.6    1.4     1.2    3.0
+    translateQuery                              FileOps                            508           0    0.2    0.9     0.5    1.5
+     translateQuery.lookup                      FileOps                            509      582800    0.3    0.6     0.3    0.6
+    checkMRF                                    HMMPlus                            390           1    0.0    0.0     0.0    0.0
+    parseMRF                                    HMMPlus                            387           1    0.0    0.0     0.0    0.1
+     mrfFile                                    HMMPlus                            392           0    0.0    0.0     0.0    0.1
+      eol                                       ParsecHelper                       463           0    0.0    0.0     0.0    0.0
+       headerLines                              HMMPlus                            465           0    0.0    0.0     0.0    0.0
+        headerLine                              HMMPlus                            466           0    0.0    0.0     0.0    0.0
+         headerKey                              HMMPlus                            467           0    0.0    0.0     0.0    0.0
+          oneStringOf                           ParsecHelper                       468           0    0.0    0.0     0.0    0.0
+           reqSpaces                            ParsecHelper                       469           0    0.0    0.0     0.0    0.0
+            ssSection                           HMMPlus                            470           0    0.0    0.0     0.0    0.0
+             betaLine                           HMMPlus                            471           0    0.0    0.0     0.0    0.0
+              eoH                               HMMPlus                            472           0    0.0    0.0     0.0    0.0
+               transHeader                      HMMPlus                            473           0    0.0    0.0     0.0    0.0
+                optSpaces                       ParsecHelper                       474           0    0.0    0.0     0.0    0.0
+                 hmmNodeGroup                   HMMPlus                            475           0    0.0    0.0     0.0    0.0
+                  hmmNodeNum                    HMMPlus                            476           0    0.0    0.0     0.0    0.0
+                   decimal                      ParsecHelper                       477           0    0.0    0.0     0.0    0.0
+                    hmmInsertionEmissions       HMMPlus                            478           0    0.0    0.0     0.0    0.0
+                     hmmTransitions             HMMPlus                            479           0    0.0    0.0     0.0    0.0
+       versionLine                              HMMPlus                            464           0    0.0    0.0     0.0    0.0
+      versionLine                               HMMPlus                            394           0    0.0    0.0     0.0    0.1
+       eol                                      ParsecHelper                       396           0    0.0    0.0     0.0    0.1
+        headerLines                             HMMPlus                            398           0    0.0    0.0     0.0    0.0
+         headerLine                             HMMPlus                            400           0    0.0    0.0     0.0    0.0
+          headerKey                             HMMPlus                            404           0    0.0    0.0     0.0    0.0
+           oneStringOf                          ParsecHelper                       405           0    0.0    0.0     0.0    0.0
+            reqSpaces                           ParsecHelper                       407           0    0.0    0.0     0.0    0.0
+             ssSection                          HMMPlus                            409           0    0.0    0.0     0.0    0.0
+              betaLine                          HMMPlus                            412           0    0.0    0.0     0.0    0.0
+               eoH                              HMMPlus                            414           0    0.0    0.0     0.0    0.0
+                transHeader                     HMMPlus                            416           0    0.0    0.0     0.0    0.0
+                 optSpaces                      ParsecHelper                       418           0    0.0    0.0     0.0    0.0
+                  hmmNodeGroup                  HMMPlus                            420           0    0.0    0.0     0.0    0.0
+                   hmmNodeNum                   HMMPlus                            422           0    0.0    0.0     0.0    0.0
+                    decimal                     ParsecHelper                       450           0    0.0    0.0     0.0    0.0
+                     decimal.\                  ParsecHelper                       497         139    0.0    0.0     0.0    0.0
+                     hmmInsertionEmissions      HMMPlus                            461           0    0.0    0.0     0.0    0.0
+                      hmmTransitions            HMMPlus                            462           0    0.0    0.0     0.0    0.0
+                       hmmMatchEmissions        HMMPlus                            480           0    0.0    0.0     0.0    0.0
+                        junk                    HMMPlus                            481           0    0.0    0.0     0.0    0.0
+                         lexeme                 ParsecHelper                       482           0    0.0    0.0     0.0    0.0
+                          logProb               HMMPlus                            483           0    0.0    0.0     0.0    0.0
+                           fractional           ParsecHelper                       484           0    0.0    0.0     0.0    0.0
+                     hmmMatchEmissions          HMMPlus                            451           0    0.0    0.0     0.0    0.0
+                      junk                      HMMPlus                            455           0    0.0    0.0     0.0    0.0
+                       lexeme                   ParsecHelper                       456           0    0.0    0.0     0.0    0.0
+                        logProb                 HMMPlus                            457           0    0.0    0.0     0.0    0.0
+                         fractional             ParsecHelper                       458           0    0.0    0.0     0.0    0.0
+                          fractional.\          ParsecHelper                       498         395    0.0    0.0     0.0    0.0
+                          hmmInsertionEmissions HMMPlus                            459           0    0.0    0.0     0.0    0.0
+                           hmmTransitions       HMMPlus                            460           0    0.0    0.0     0.0    0.0
+                            mkTransProb         MRFTypes                           496          19    0.0    0.0     0.0    0.0
+                            mkTransProbs        MRFTypes                           495           3    0.0    0.0     0.0    0.0
+                      lexeme                    ParsecHelper                       452           0    0.0    0.0     0.0    0.0
+                       logProb                  HMMPlus                            453           0    0.0    0.0     0.0    0.0
+                        fractional              ParsecHelper                       454           0    0.0    0.0     0.0    0.0
+                         fractional.\           ParsecHelper                       519         300    0.0    0.0     0.0    0.0
+                    hmmMatchEmissions           HMMPlus                            424           0    0.0    0.0     0.0    0.0
+                     junk                       HMMPlus                            436           0    0.0    0.0     0.0    0.0
+                      lexeme                    ParsecHelper                       438           0    0.0    0.0     0.0    0.0
+                       logProb                  HMMPlus                            440           0    0.0    0.0     0.0    0.0
+                        fractional              ParsecHelper                       441           0    0.0    0.0     0.0    0.0
+                         fractional.\           ParsecHelper                       531         130    0.0    0.0     0.0    0.0
+                         decimal                ParsecHelper                       442           0    0.0    0.0     0.0    0.0
+                          decimal.\             ParsecHelper                       530          26    0.0    0.0     0.0    0.0
+                          hmmInsertionEmissions HMMPlus                            444           0    0.0    0.0     0.0    0.0
+                           hmmTransitions       HMMPlus                            447           0    0.0    0.0     0.0    0.0
+                            mkTransProb         MRFTypes                           529           7    0.0    0.0     0.0    0.0
+                            mkTransProbs        MRFTypes                           528           1    0.0    0.0     0.0    0.0
+                       decimal                  ParsecHelper                       439           0    0.0    0.0     0.0    0.0
+                     lexeme                     ParsecHelper                       426           0    0.0    0.0     0.0    0.0
+                      logProb                   HMMPlus                            428           0    0.0    0.0     0.0    0.0
+                       fractional               ParsecHelper                       430           0    0.0    0.0     0.0    0.0
+                        decimal                 ParsecHelper                       432           0    0.0    0.0     0.0    0.0
+  getOpts                                       CommandArgs                        382           1    0.0    0.0     0.0    0.0
+   getFiles                                     CommandArgs                        385           1    0.0    0.0     0.0    0.0
+ CAF                                            Main                               379           0    0.0    0.0     0.0    0.0
+  main                                          Main                               380           1    0.0    0.0     0.0    0.0
+ CAF                                            CommandArgs                        378           0    0.0    0.0     0.0    0.0
+  getOpts                                       CommandArgs                        383           0    0.0    0.0     0.0    0.0
+ CAF                                            FileOps                            377           0    0.0    0.0     0.0    0.0
+  translateQuery                                FileOps                            507           1    0.0    0.0     0.0    0.0
+ CAF                                            Constants                          376           0    0.0    0.0     0.0    0.0
+  aminoList                                     Constants                          511           1    0.0    0.0     0.0    0.0
+  amino                                         Constants                          510           1    0.0    0.0     0.0    0.0
+ CAF                                            HMMPlus                            371           0    0.0    0.0     0.0    0.0
+  p_int                                         HMMPlus                            449           1    0.0    0.0     0.0    0.0
+  hmmTransitions                                HMMPlus                            446           1    0.0    0.0     0.0    0.0
+   lexeme                                       ParsecHelper                       448           1    0.0    0.0     0.0    0.0
+  hmmInsertionEmissions                         HMMPlus                            443           1    0.0    0.0     0.0    0.0
+   lexeme                                       ParsecHelper                       445           1    0.0    0.0     0.0    0.0
+  junk                                          HMMPlus                            435           1    0.0    0.0     0.0    0.0
+   lexeme                                       ParsecHelper                       437           2    0.0    0.0     0.0    0.0
+  logProb                                       HMMPlus                            427           1    0.0    0.0     0.0    0.0
+   fractional                                   ParsecHelper                       429           1    0.0    0.0     0.0    0.0
+    fractional.\                                ParsecHelper                       499           0    0.0    0.0     0.0    0.0
+  hmmMatchEmissions                             HMMPlus                            423           1    0.0    0.0     0.0    0.0
+   lexeme                                       ParsecHelper                       425           1    0.0    0.0     0.0    0.0
+  hmmNodeNum                                    HMMPlus                            421           1    0.0    0.0     0.0    0.0
+  hmmNodeGroup                                  HMMPlus                            419           1    0.0    0.0     0.0    0.0
+  transHeader                                   HMMPlus                            415           1    0.0    0.0     0.0    0.0
+  eoH                                           HMMPlus                            413           1    0.0    0.0     0.0    0.0
+  betaLine                                      HMMPlus                            411           1    0.0    0.0     0.0    0.0
+  ssLine                                        HMMPlus                            410           1    0.0    0.0     0.0    0.0
+  ssSection                                     HMMPlus                            408           1    0.0    0.0     0.0    0.0
+  headerKey                                     HMMPlus                            401           1    0.0    0.0     0.0    0.0
+   oneStringOf                                  ParsecHelper                       403           0    0.0    0.0     0.0    0.0
+  headerLine                                    HMMPlus                            399           1    0.0    0.0     0.0    0.0
+  headerLines                                   HMMPlus                            397           1    0.0    0.0     0.0    0.0
+  versionLine                                   HMMPlus                            393           1    0.0    0.0     0.0    0.0
+  mrfFile                                       HMMPlus                            391           1    0.0    0.0     0.0    0.0
+ CAF                                            MRFTypes                           367           0    0.0    0.0     0.0    0.0
+  insertionEmissions                            MRFTypes                           541           1    0.0    0.0     0.0    0.0
+  matchEmissions                                MRFTypes                           518           1    0.0    0.0     0.0    0.0
+ CAF                                            Score                              364           0    0.0    0.0     0.0    0.0
+  negLogZero                                    Score                              533           1    0.0    0.0     0.0    0.0
+  compare                                       Score                              488           1    0.0    0.0     0.0    0.0
+ CAF                                            Viterbi                            360           0    0.0    0.0     0.0    0.0
+  viterbi                                       Viterbi                            501           0    0.0    0.0     0.0    0.0
+   viterbi.disallowed                           Viterbi                            532           1    0.0    0.0     0.0    0.0
+   viterbi.vee''                                Viterbi                            502           0    0.0    0.0     0.0    0.0
+ CAF                                            ParsecHelper                       355           0    0.0    0.0     0.0    0.0
+  lexeme                                        ParsecHelper                       434           0    0.0    0.0     0.0    0.0
+  fractional                                    ParsecHelper                       433           0    0.0    0.0     0.0    0.0
+  decimal                                       ParsecHelper                       431           1    0.0    0.0     0.0    0.0
+  optSpaces                                     ParsecHelper                       417           1    0.0    0.0     0.0    0.0
+  reqSpaces                                     ParsecHelper                       406           1    0.0    0.0     0.0    0.0
+  oneStringOf                                   ParsecHelper                       402           1    0.0    0.0     0.0    0.0
+  eol                                           ParsecHelper                       395           1    0.0    0.0     0.0    0.0
+ CAF                                            Bio.Sequence.Fasta                 325           0    0.0    0.0     0.0    0.0
+ CAF                                            GHC.Conc.Signal                    251           0    0.0    0.0     0.0    0.0
+ CAF                                            GHC.Float                          246           0    0.0    0.0     0.0    0.0
+ CAF                                            GHC.IO.Encoding                    243           0    0.0    0.0     0.0    0.0
+ CAF                                            GHC.IO.Encoding.Iconv              241           0    0.0    0.0     0.0    0.0
+ CAF                                            GHC.IO.FD                          236           0    0.0    0.0     0.0    0.0
+ CAF                                            GHC.IO.Handle.FD                   234           0    0.0    0.0     0.0    0.0
+ CAF                                            GHC.Integer.Logarithms.Internals   198           0    0.0    0.0     0.0    0.0
+  main                                          Main                               582           0    0.0    0.0     0.0    0.0
+   runCommand                                   FileOps                            583           0    0.0    0.0     0.0    0.0
+    loadTestData                                FileOps                            584           0    0.0    0.0     0.0    0.0
+     parseMRF                                   HMMPlus                            585           0    0.0    0.0     0.0    0.0

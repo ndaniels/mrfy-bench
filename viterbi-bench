@@ -94,7 +94,10 @@ function build_checkout {
 while true; do
   case $1 in
     -smurf)    smurf="yes" ; shift ;;
+    -micro1)   mode_opt="$1" ; mode="micro1" ; shift ;;
+    -micro2)   mode_opt="$1" ; mode="micro2" ; shift ;;
     -s)        mode_opt="$1" ; mode="short" ; shift ;;
+    -s2)       mode_opt="$1" ; mode="short2" ; shift ;;
     -m)        mode_opt="$1" ; mode="med" ; shift ;;
     -l)        mode_opt="$1" ; mode="long" ; shift ;;
     -valgrind) mode_opt="$1" ; mode="valgrind" ; shift ;;
@@ -174,18 +177,33 @@ ghcver="GHC $(ghc --version \
 query_file=
 template_dir=
 passes=
-if command -V greadlink > /dev/null 2>&1; then
+if command -V greadlink; then
   benchabs="$(greadlink -f "$0")"
 else
   benchabs="$(readlink -f "$0")"
 fi
 benchdir="${benchabs%/*}"
 case $mode in
+  micro1)
+    query_file="$benchdir/queries/medium.fasta"
+    template_dir="$benchdir/micro1_templates"
+    passes=1
+    ;;
+  micro2)
+    query_file="$benchdir/queries/medium.fasta"
+    template_dir="$benchdir/micro2_templates"
+    passes=1
+    ;;
   short)
     query_file="$benchdir/queries/short.fasta"
     template_dir="$benchdir/short_templates"
     passes=1
     ;;
+  short2)
+    query_file="$benchdir/queries/long.fasta"
+    template_dir="$benchdir/short_templates"
+    passes=1
+    ;;  
   med)
     query_file="$benchdir/queries/short.fasta"
     template_dir="$benchdir/med_templates"
@@ -253,7 +271,7 @@ function run_benchmark {
   if [ ${#benchname} -le 13 ]; then
     shortbench=$benchname
   else
-    shortbench=${benchname:(-10)}
+    shortbench="...${benchname:(-10)}"
   fi
 
   printf "%-22s  %7.2fs  %6s  %-6s  %s\n" "$shortbench $git$dirty" \
