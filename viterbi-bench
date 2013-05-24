@@ -54,6 +54,8 @@ function usage {
 
   -p         Run multiple benchmarks in parallel
 
+  -passes N  Run N passes (defaults vary by benchmark)
+
   -skip dir  Don't build or run benchmark in dir
 
   -valgrind  A benchmark small enough to be profiled by valgrind.
@@ -62,7 +64,8 @@ function usage {
 
   -b "dir-name [ dir-name [ ... ] ]"
              A single string with a space delimited list of
-             directory names to run benchmarks on.
+             directory names to run benchmarks on.  May be repeated to
+             add directories
 
   -v         Show extra output, like the times for each HMM.
              Does not work with -p.
@@ -80,6 +83,7 @@ column=
 valgrind_opts=
 parallel_run=
 rundirs=()
+passes=
 
 function build_checkout {
   (
@@ -101,12 +105,13 @@ while true; do
     -m)        mode_opt="$1" ; mode="med" ; shift ;;
     -l)        mode_opt="$1" ; mode="long" ; shift ;;
     -valgrind) mode_opt="$1" ; mode="valgrind" ; shift ;;
-    -b)        user_checkouts="$2" ; shift 2 ;;
+    -b)        user_checkouts="$user_checkouts $2" ; shift 2 ;;
     -v)        verbose="yes" ; shift ;;
     -col)      column="yes" ; shift ;;
     -h)        usage ;;
     -skip)     skip["$2"]=yes ; shift ; shift ;;
     -p)        parallel_run=" parallel" ; shift ;;
+    -passes)   passes="$2" ; shift ; shift ;;
     -build)    shift ; for i do build_checkout "$i" ; done
                exit 0
                ;;
@@ -168,7 +173,8 @@ fi
 cpuid=$(echo $cpustr \
         | sed -e 's/^ *//g' -e 's/ *$//g' -e 's/(R)//' \
               -e 's/(TM)//' -e 's/Intel Core/Core/' -e 's/ CPU//' \
-              -e 's/(tm)//' -e 's/Quad-Core Processor//'
+              -e 's/(tm)//' -e 's/Quad-Core Processor//' \
+              -e 's/ Processor//'
         )
 arch=$(uname -m)
 ghcver="GHC $(ghc --version \
@@ -177,12 +183,12 @@ ghcver="GHC $(ghc --version \
 query_file=
 template_dir=
 passes=
-if command -V greadlink; then
+if command -V greadlink > /dev/null 2>&1; then
   benchabs="$(greadlink -f "$0")"
 else
   benchabs="$(readlink -f "$0")"
 fi
-benchdir="${benchabs%/*}"
+benchdir="$(dirname "$benchabs")"
 case $mode in
   micro1)
     query_file="$benchdir/queries/medium.fasta"
@@ -197,7 +203,7 @@ case $mode in
   short)
     query_file="$benchdir/queries/short.fasta"
     template_dir="$benchdir/short_templates"
-    passes=1
+    passes=${passes:-1}
     ;;
   short2)
     query_file="$benchdir/queries/long.fasta"
@@ -207,17 +213,17 @@ case $mode in
   med)
     query_file="$benchdir/queries/short.fasta"
     template_dir="$benchdir/med_templates"
-    passes=2
+    passes=${passes:-2}
     ;;
   long)
     query_file="$benchdir/queries/long.fasta"
     template_dir="$benchdir/long_templates"
-    passes=5
+    passes=${passes:-5}
     ;;
   valgrind)
     query_file="$benchdir/queries/8.fasta"
     template_dir="$benchdir/valgrind_templates"
-    passes=1
+    passes=${passes:-1}
     ;;
   *)
     err "BUG: Unrecognized mode $mode"
@@ -361,7 +367,7 @@ if [[ ${#rundirs[*]} -gt 0 ]]; then
     run_benchmark "$dir"
   done
 else
-  dirs=$(find -L $MRFY_CHECKOUTS_PATH -type d \
+  dirs=$(find -L $MRFY_CHECKOUTS_PATH -maxdepth 1 -type d \
               -and -not -wholename '*.git*' \
               -and -not -wholename '*/dist*')
   checkouts=()
