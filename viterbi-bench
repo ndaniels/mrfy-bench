@@ -40,6 +40,13 @@ function usage {
              set to the directory containing the "smurf"
              executable and the beta "dat" files.
 
+  -fixed     Benchmark that is proportional to the number of
+             passes specified (which defaults to 10).
+             Note that the number of passes in this case refers
+             to the number of times viterbi is called for each
+             (HMM, query) pair, rather than the number of times
+             the 'mrfy' binary is invoked for each HMM.
+
   -s         Benchmark that takes 5-10 seconds.
 
   -m         Benchmark that takes 2 minutes and reports the
@@ -104,6 +111,7 @@ while true; do
     -s2)       mode_opt="$1" ; mode="short2" ; shift ;;
     -m)        mode_opt="$1" ; mode="med" ; shift ;;
     -l)        mode_opt="$1" ; mode="long" ; shift ;;
+    -fixed)    mode_opt="$1" ; mode="fixed" ; shift ;;
     -valgrind) mode_opt="$1" ; mode="valgrind" ; shift ;;
     -b)        user_checkouts="$user_checkouts $2" ; shift 2 ;;
     -v)        verbose="yes" ; shift ;;
@@ -182,7 +190,7 @@ ghcver="GHC $(ghc --version \
 
 query_file=
 template_dir=
-passes=
+viterbi_passes=1
 if command -V greadlink > /dev/null 2>&1; then
   benchabs="$(greadlink -f "$0")"
 else
@@ -220,6 +228,12 @@ case $mode in
     template_dir="$benchdir/long_templates"
     passes=${passes:-5}
     ;;
+  fixed)
+    query_file="$benchdir/queries/fixed.fasta"
+    template_dir="$benchdir/fixed_templates"
+    viterbi_passes=${passes:-10}
+    passes=1
+    ;;
   valgrind)
     query_file="$benchdir/queries/8.fasta"
     template_dir="$benchdir/valgrind_templates"
@@ -241,7 +255,6 @@ function run_benchmark {
   git=
   dirty=
 
-
   if [ -z "$checkout" ]; then
     benchname="smurf"
   else
@@ -253,7 +266,7 @@ function run_benchmark {
     }
   fi
 
-  for hmm in $template_dir/*.hmm+; do
+  for hmm in "$template_dir"/*.hmm+; do
     pass_times=()
     for ((i = 1; i <= $passes; i++)); do
       t=
@@ -291,9 +304,10 @@ function run_mrfy {
   bin="$checkout"/dist/build/mrfy/mrfy
 
   if [ "$mode" = valgrind ]; then
-    valgrind ${valgrind_opts[@]} "$bin" -viterbi "$hmm" "$query_file"
+    valgrind ${valgrind_opts[@]} \
+      "$bin" -viterbi --num-passes "$viterbi_passes" "$hmm" "$query_file"
   else
-    timeit "$bin" -viterbi "$hmm" "$query_file"
+    timeit "$bin" -viterbi --num-passes "$viterbi_passes" "$hmm" "$query_file"
   fi
 }
 
@@ -390,7 +404,8 @@ else
     done | xargs -n 1 -P ${NPROC:-12} "$0" -build
   fi
 
-  err "### $(date +'%F %H:%M')  Running $mode$parallel_run: ${basenames[*]}"
+  echo "### $(date +'%F %H:%M')  " \
+      "Running $mode$parallel_run(vpasses=$viterbi_passes): ${basenames[*]}"
   if [ -n "$smurf" ]; then
     run_benchmark
   fi
