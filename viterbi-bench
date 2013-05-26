@@ -318,7 +318,6 @@ function run_benchmark {
 }
 
 function run_cvit_benchmark {
-  echo "$cvit_exec" "$viterbi_passes" >&2
   benchtime=$(timeit "$cvit_exec" "$viterbi_passes")
   shortbench="cviterbi"
   printf "%-22s  %7.2fs  %6s  %-6s  %s\n" "$shortbench $git$dirty" \
