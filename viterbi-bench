@@ -412,6 +412,7 @@ else
   dirs=$(find -L $MRFY_CHECKOUTS_PATH -maxdepth 1 -type d \
               -and -not -wholename '*.git*' \
               -and -not -wholename '*/dist*')
+  dirs=$(echo $MRFY_CHECKOUTS_PATH/*)  # gets alphabetical order
   checkouts=()
   basenames=()
   for dir in $dirs; do
