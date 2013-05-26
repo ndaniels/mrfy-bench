@@ -167,10 +167,6 @@ if [ -n "$cvit" ]; then
         "set it to the directory containing C viterbi."
     exit 1
   fi
-  if ! [ -x "$cvit_exec" ]; then
-    err = "Cannot find C viterbi executable at $cvit_exec"
-    exit1
-  fi
 fi
 if [ -n "$smurf" ]; then
   if [ -z "$SMURF_PATH" ]; then
@@ -318,6 +314,7 @@ function run_benchmark {
 }
 
 function run_cvit_benchmark {
+  ( cd "$CVIT_PATH" && make )
   benchtime=$(timeit "$cvit_exec" "$viterbi_passes")
   shortbench="cviterbi"
   printf "%-22s  %7.2fs  %6s  %-6s  %s\n" "$shortbench $git$dirty" \
