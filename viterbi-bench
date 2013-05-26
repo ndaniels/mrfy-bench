@@ -40,6 +40,13 @@ function usage {
              set to the directory containing the "smurf"
              executable and the beta "dat" files.
 
+  -cvit      When set, the iterative C implementation of
+             Viterbi's algorithm is run with the "fixed"
+             benchmark.
+             The CVIT_PATH environment variable must be set
+             to the directory containing the "viterbi"
+             executable.
+
   -fixed     Benchmark that is proportional to the number of
              passes specified (which defaults to 10).
              Note that the number of passes in this case refers
@@ -105,6 +112,7 @@ function build_checkout {
 while true; do
   case $1 in
     -smurf)    smurf="yes" ; shift ;;
+    -cvit)     cvit="yes" ; shift ;;
     -micro1)   mode_opt="$1" ; mode="micro1" ; shift ;;
     -micro2)   mode_opt="$1" ; mode="micro2" ; shift ;;
     -s)        mode_opt="$1" ; mode="short" ; shift ;;
@@ -142,6 +150,7 @@ done
 data_buried="$SMURF_PATH/betaDataBuriedRevised.dat"
 data_exposed="$SMURF_PATH/betaDataExposedRevised.dat"
 smurf_exec="$SMURF_PATH/smurf"
+cvit_exec="$CVIT_PATH/viterbi"
 
 if [ -z "$MRFY_CHECKOUTS_PATH" ]; then
   err "MRFY_CHECKOUTS_PATH is unset;" \
@@ -151,6 +160,17 @@ fi
 if [ -z "$mode" ]; then
   err "No benchmark specified."
   usage
+fi
+if [ -n "$cvit" ]; then
+  if [ -z "$CVIT_PATH" ]; then
+    err "CVIT_PATH environment variable not set;" \
+        "set it to the directory containing C viterbi."
+    exit 1
+  fi
+  if ! [ -x "$cvit_exec" ]; then
+    err = "Cannot find C viterbi executable at $cvit_exec"
+    exit1
+  fi
 fi
 if [ -n "$smurf" ]; then
   if [ -z "$SMURF_PATH" ]; then
@@ -297,6 +317,14 @@ function run_benchmark {
      "$benchtime" "$arch" "$ghcver" "$cpuid"
 }
 
+function run_cvit_benchmark {
+  echo "$cvit_exec" "$viterbi_passes" >&2
+  benchtime=$(timeit "$cvit_exec" "$viterbi_passes")
+  shortbench="cviterbi"
+  printf "%-22s  %7.2fs  %6s  %-6s  %s\n" "$shortbench $git$dirty" \
+     "$benchtime" "$arch" "$ghcver" "$cpuid"
+}
+
 function run_mrfy {
   checkout="$1"
   hmm="$2"
@@ -408,6 +436,9 @@ else
       "Running $mode$parallel_run(vpasses=$viterbi_passes): ${basenames[*]}"
   if [ -n "$smurf" ]; then
     run_benchmark
+  fi
+  if [ -n "$cvit" ]; then
+    run_cvit_benchmark
   fi
   if [[ -n "$parallel_run" ]]; then
     if [[ -x /usr/bin/parallel ]]; then
